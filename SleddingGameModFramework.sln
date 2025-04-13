@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SleddingGameModFramework", "SleddingGameModFramework\SleddingGameModFramework.csproj", "{CF1ED640-38DE-48D3-B70B-34590442CEBA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SleddingGame.TestMod", "SleddingGame.TestMod\SleddingGame.TestMod.csproj", "{ED362AE0-E592-4B1A-B092-0E150C4C29E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SleddingGame.ModTester", "SleddingGame.ModTester\SleddingGame.ModTester.csproj", "{288ACA0A-FE79-4BF0-84D4-4F57D813EBD3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{CF1ED640-38DE-48D3-B70B-34590442CEBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF1ED640-38DE-48D3-B70B-34590442CEBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF1ED640-38DE-48D3-B70B-34590442CEBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED362AE0-E592-4B1A-B092-0E150C4C29E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED362AE0-E592-4B1A-B092-0E150C4C29E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED362AE0-E592-4B1A-B092-0E150C4C29E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED362AE0-E592-4B1A-B092-0E150C4C29E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{288ACA0A-FE79-4BF0-84D4-4F57D813EBD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{288ACA0A-FE79-4BF0-84D4-4F57D813EBD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{288ACA0A-FE79-4BF0-84D4-4F57D813EBD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{288ACA0A-FE79-4BF0-84D4-4F57D813EBD3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

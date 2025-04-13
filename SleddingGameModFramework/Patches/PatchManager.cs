@@ -7,75 +7,66 @@ using SleddingGameModFramework.Utils;
 namespace SleddingGameModFramework.Patches
 {
     /// <summary>
-    /// Manages Harmony patches for the game
+    /// Manages Harmony patches for the mod framework
     /// </summary>
-
     public class PatchManager
     {
         private readonly Dictionary<string, Harmony> _harmonyInstances = new();
-        private bool _initialized = false;
-
-        /// <summary>
-        /// Initializes the patch manager
-        /// </summary>
-        public void Initialize()
-        {
-            if (_initialized) return;
-            
-            Logger.Info("Initializing Patch Manager");
-            
-            _initialized = true;
-        }
-
+        
         /// <summary>
         /// Creates a new Harmony instance for the specified mod
         /// </summary>
         /// <param name="modId">Unique ID of the mod</param>
-        /// <returns>Harmony instance</returns>
+        /// <returns>The Harmony instance</returns>
         public Harmony GetHarmonyInstance(string modId)
         {
             if (string.IsNullOrEmpty(modId))
                 throw new ArgumentNullException(nameof(modId));
             
-            if (_harmonyInstances.TryGetValue(modId, out var instance))
-                return instance;
+            if (!_harmonyInstances.TryGetValue(modId, out var harmony))
+            {
+                // Create a new Harmony instance for this mod
+                string harmonyId = $"com.sleddingmodframework.{modId}";
+                harmony = new Harmony(harmonyId);
+                _harmonyInstances[modId] = harmony;
+                
+                Logger.Debug($"Created Harmony instance for mod: {modId}");
+            }
             
-            instance = new Harmony($"sleddingame.mod.{modId}");
-            _harmonyInstances[modId] = instance;
-            
-            Logger.Debug($"Created Harmony instance for mod {modId}");
-            return instance;
+            return harmony;
         }
         
         /// <summary>
-        /// Applies all patches defined in the specified assembly
+        /// Applies all patches in the specified assembly
         /// </summary>
         /// <param name="modId">ID of the mod</param>
-        /// <param name="assembly">Assembly containing the patches</param>
+        /// <param name="assembly">Assembly containing patches</param>
         public void ApplyPatches(string modId, Assembly assembly)
         {
-            if (!_initialized)
-                throw new InvalidOperationException("PatchManager is not initialized");
+            if (string.IsNullOrEmpty(modId))
+                throw new ArgumentNullException(nameof(modId));
             
             if (assembly == null)
                 throw new ArgumentNullException(nameof(assembly));
             
             try
             {
-                Logger.Info($"Applying patches for mod {modId} from assembly {assembly.GetName().Name}");
+                Logger.Info($"Applying patches for mod: {modId}");
+                
                 Harmony harmony = GetHarmonyInstance(modId);
                 harmony.PatchAll(assembly);
-                Logger.Info($"Successfully applied patches for mod {modId}");
+                
+                Logger.Info($"Successfully applied patches for mod: {modId}");
             }
             catch (Exception ex)
             {
-                Logger.Error($"Failed to apply patches for mod {modId}: {ex.Message}");
+                Logger.Error($"Error applying patches for mod {modId}: {ex.Message}");
                 throw;
             }
         }
         
         /// <summary>
-        /// Manually creates and applies a patch
+        /// Applies a single patch manually
         /// </summary>
         /// <param name="modId">ID of the mod</param>
         /// <param name="originalMethod">Method to patch</param>
@@ -83,16 +74,17 @@ namespace SleddingGameModFramework.Patches
         /// <param name="postfix">Optional postfix method</param>
         /// <param name="transpiler">Optional transpiler method</param>
         /// <param name="finalizer">Optional finalizer method</param>
-        public void CreatePatch(
+        /// <returns>The patch info</returns>
+        public MethodInfo ApplyPatch(
             string modId,
-            MethodInfo originalMethod,
-            MethodInfo prefix = null,
-            MethodInfo postfix = null,
+            MethodInfo originalMethod, 
+            MethodInfo prefix = null, 
+            MethodInfo postfix = null, 
             MethodInfo transpiler = null,
             MethodInfo finalizer = null)
         {
-            if (!_initialized)
-                throw new InvalidOperationException("PatchManager is not initialized");
+            if (string.IsNullOrEmpty(modId))
+                throw new ArgumentNullException(nameof(modId));
             
             if (originalMethod == null)
                 throw new ArgumentNullException(nameof(originalMethod));
@@ -102,70 +94,74 @@ namespace SleddingGameModFramework.Patches
             
             try
             {
-                Logger.Debug($"Creating manual patch for method {originalMethod.DeclaringType?.FullName}.{originalMethod.Name}");
+                Logger.Info($"Applying manual patch to {originalMethod.DeclaringType?.FullName}.{originalMethod.Name} for mod: {modId}");
+                
                 Harmony harmony = GetHarmonyInstance(modId);
+                HarmonyMethod prefixPatch = prefix != null ? new HarmonyMethod(prefix) : null;
+                HarmonyMethod postfixPatch = postfix != null ? new HarmonyMethod(postfix) : null;
+                HarmonyMethod transpilerPatch = transpiler != null ? new HarmonyMethod(transpiler) : null;
+                HarmonyMethod finalizerPatch = finalizer != null ? new HarmonyMethod(finalizer) : null;
                 
-                var patcher = harmony.CreateProcessor(originalMethod);
-                
-                if (prefix != null)
-                    patcher.AddPrefix(prefix);
-                
-                if (postfix != null)
-                    patcher.AddPostfix(postfix);
-                
-                if (transpiler != null)
-                    patcher.AddTranspiler(transpiler);
-                
-                if (finalizer != null)
-                    patcher.AddFinalizer(finalizer);
-                
-                patcher.Patch();
-                
-                Logger.Debug($"Successfully applied manual patch for {originalMethod.DeclaringType?.FullName}.{originalMethod.Name}");
+                return harmony.Patch(
+                    originalMethod,
+                    prefixPatch,
+                    postfixPatch,
+                    transpilerPatch,
+                    finalizerPatch);
             }
             catch (Exception ex)
             {
-                Logger.Error($"Failed to apply manual patch: {ex.Message}");
+                Logger.Error($"Error applying patch for mod {modId}: {ex.Message}");
                 throw;
             }
         }
         
         /// <summary>
-        /// Removes all patches created by the specified mod
+        /// Removes all patches applied by the specified mod
         /// </summary>
         /// <param name="modId">ID of the mod</param>
         public void RemovePatches(string modId)
         {
-            if (!_initialized)
-                return;
-            
             if (string.IsNullOrEmpty(modId))
-                throw new ArgumentNullException(nameof(modId));
+                return;
             
             if (_harmonyInstances.TryGetValue(modId, out var harmony))
             {
                 try
                 {
-                    Logger.Info($"Removing all patches for mod {modId}");
-                    harmony.UnpatchAll($"sleddingame.mod.{modId}");
+                    Logger.Info($"Removing all patches for mod: {modId}");
+                    harmony.UnpatchAll(harmony.Id);
                     _harmonyInstances.Remove(modId);
-                    Logger.Info($"Successfully removed patches for mod {modId}");
+                    Logger.Info($"Successfully removed patches for mod: {modId}");
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error($"Failed to remove patches for mod {modId}: {ex.Message}");
-                    throw;
+                    Logger.Error($"Error removing patches for mod {modId}: {ex.Message}");
                 }
             }
         }
         
         /// <summary>
-        /// Adds the PatchManager to the ModFramework
+        /// Removes all patches from all mods
         /// </summary>
-        public void RegisterWithFramework()
+        public void RemoveAllPatches()
         {
-            // This will be implemented when we update the ModFramework class
+            Logger.Info("Removing all patches from all mods");
+            
+            foreach (var harmony in _harmonyInstances.Values)
+            {
+                try
+                {
+                    harmony.UnpatchAll(harmony.Id);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Error removing patches for instance {harmony.Id}: {ex.Message}");
+                }
+            }
+            
+            _harmonyInstances.Clear();
+            Logger.Info("All patches removed");
         }
     }
 }
-

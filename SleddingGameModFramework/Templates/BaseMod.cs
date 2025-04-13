@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using HarmonyLib;
 using SleddingGameModFramework.API;
 using SleddingGameModFramework.Configuration;
 
@@ -37,11 +36,6 @@ namespace SleddingGameModFramework.Templates
         protected ModFramework Framework => ModFramework.Instance;
         
         /// <summary>
-        /// The Harmony instance for this mod
-        /// </summary>
-        protected Harmony HarmonyInstance => Framework.PatchManager.GetHarmonyInstance(Id);
-        
-        /// <summary>
         /// Called when the mod is being initialized
         /// </summary>
         public virtual void Initialize()
@@ -54,8 +48,7 @@ namespace SleddingGameModFramework.Templates
         /// </summary>
         public virtual void Shutdown()
         {
-            // Remove all patches when the mod is unloaded
-            Framework.PatchManager.RemovePatches(Id);
+            // Default implementation does nothing
         }
         
         /// <summary>
@@ -123,7 +116,7 @@ namespace SleddingGameModFramework.Templates
         }
         
         /// <summary>
-        /// Applies all Harmony patches defined in the mod's assembly
+        /// Applies all Harmony patches in this mod's assembly
         /// </summary>
         protected void ApplyHarmonyPatches()
         {
@@ -131,21 +124,17 @@ namespace SleddingGameModFramework.Templates
         }
         
         /// <summary>
-        /// Creates a manual Harmony patch
+        /// Applies a single Harmony patch
         /// </summary>
-        /// <param name="originalMethod">Method to patch</param>
-        /// <param name="prefix">Optional prefix method</param>
-        /// <param name="postfix">Optional postfix method</param>
-        /// <param name="transpiler">Optional transpiler method</param>
-        /// <param name="finalizer">Optional finalizer method</param>
-        protected void CreatePatch(
+        protected MethodInfo ApplyPatch(
             MethodInfo originalMethod,
             MethodInfo prefix = null,
             MethodInfo postfix = null,
             MethodInfo transpiler = null,
             MethodInfo finalizer = null)
         {
-            Framework.PatchManager.CreatePatch(Id, originalMethod, prefix, postfix, transpiler, finalizer);
+            return Framework.PatchManager.ApplyPatch(
+                Id, originalMethod, prefix, postfix, transpiler, finalizer);
         }
     }
 }

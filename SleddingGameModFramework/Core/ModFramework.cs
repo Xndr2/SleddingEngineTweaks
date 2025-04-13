@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 using SleddingGameModFramework.Core;
-using SleddingGameModFramework.Patches;
 using SleddingGameModFramework.Utils;
+using SleddingGameModFramework.Patches;
 
 namespace SleddingGameModFramework
 {
@@ -29,11 +29,6 @@ namespace SleddingGameModFramework
         public EventManager EventManager { get; private set; }
         
         /// <summary>
-        /// The patch manager
-        /// </summary>
-        public PatchManager PatchManager { get; private set; }
-        
-        /// <summary>
         /// Whether the framework has been initialized
         /// </summary>
         public bool IsInitialized { get; private set; }
@@ -47,6 +42,11 @@ namespace SleddingGameModFramework
         /// Directory where mods are stored
         /// </summary>
         public string ModsDirectory { get; private set; }
+        
+        /// <summary>
+        /// The patch manager
+        /// </summary>
+        public PatchManager PatchManager { get; private set; }
         
         private ModFramework()
         {
@@ -71,14 +71,13 @@ namespace SleddingGameModFramework
                 Logger.Initialize();
                 Logger.Info("Initializing SleddingGameModFramework");
                 
-                // Create managers
+                // Create mod manager and event manager
                 ModManager = new ModManager(ModsDirectory);
                 EventManager = new EventManager(ModManager);
                 PatchManager = new PatchManager();
                 
-                // Initialize managers
+                // Initialize the mod manager
                 ModManager.Initialize();
-                PatchManager.Initialize();
                 
                 IsInitialized = true;
                 Logger.Info("SleddingGameModFramework initialized successfully");
