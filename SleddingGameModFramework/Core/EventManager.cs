@@ -1,144 +1,61 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using SleddingGameModFramework.API;
-using SleddingGameModFramework.Utils;
+using System.Linq;
+using SleddingGameModFramework.Interfaces;
 
 namespace SleddingGameModFramework.Core
 {
-    /// <summary>
-    /// Manages events and communication between mods
-    /// </summary>
     public class EventManager
     {
-        private readonly Dictionary<string, List<Action<object[]>>> _eventHandlers = new();
-        private readonly ModManager _modManager;
-        
-        /// <summary>
-        /// Creates a new event manager
-        /// </summary>
-        /// <param name="modManager">The mod manager instance</param>
-        public EventManager(ModManager modManager)
+        private readonly Dictionary<string, List<IEventHandler>> _eventHandlers = new Dictionary<string, List<IEventHandler>>();
+
+        public void RegisterHandler(string eventName, IEventHandler handler)
         {
-            _modManager = modManager ?? throw new ArgumentNullException(nameof(modManager));
-        }
-        
-        /// <summary>
-        /// Registers a handler for the specified event
-        /// </summary>
-        /// <param name="eventName">Name of the event</param>
-        /// <param name="handler">Handler function</param>
-        public void RegisterHandler(string eventName, Action<object[]> handler)
-        {
-            if (string.IsNullOrEmpty(eventName))
-                throw new ArgumentNullException(nameof(eventName));
-            
-            if (handler == null)
-                throw new ArgumentNullException(nameof(handler));
-            
-            if (!_eventHandlers.TryGetValue(eventName, out var handlers))
+            if (!_eventHandlers.ContainsKey(eventName))
             {
-                handlers = new List<Action<object[]>>();
-                _eventHandlers[eventName] = handlers;
+                _eventHandlers[eventName] = new List<IEventHandler>();
             }
-            
-            handlers.Add(handler);
-            Logger.Debug($"Registered handler for event: {eventName}");
+
+            _eventHandlers[eventName].Add(handler);
+            // Sort handlers by priority
+            _eventHandlers[eventName] = _eventHandlers[eventName].OrderBy(h => h.Priority).ToList();
         }
-        
-        /// <summary>
-        /// Unregisters a handler for the specified event
-        /// </summary>
-        /// <param name="eventName">Name of the event</param>
-        /// <param name="handler">Handler function to remove</param>
-        /// <returns>True if the handler was removed, false if not found</returns>
-        public bool UnregisterHandler(string eventName, Action<object[]> handler)
+
+        public void UnregisterHandler(string eventName, IEventHandler handler)
         {
-            if (string.IsNullOrEmpty(eventName) || handler == null)
-                return false;
-            
             if (_eventHandlers.TryGetValue(eventName, out var handlers))
             {
-                bool removed = handlers.Remove(handler);
-                
-                if (removed)
-                    Logger.Debug($"Unregistered handler for event: {eventName}");
-                
-                // Remove the event entirely if no more handlers
-                if (handlers.Count == 0)
-                    _eventHandlers.Remove(eventName);
-                
-                return removed;
+                handlers.Remove(handler);
             }
-            
-            return false;
         }
-        
-        /// <summary>
-        /// Triggers an event with the specified arguments
-        /// </summary>
-        /// <param name="eventName">Name of the event</param>
-        /// <param name="args">Event arguments</param>
-        public void TriggerEvent(string eventName, params object[] args)
+
+        public void RaiseEvent(IGameEvent gameEvent)
         {
-            if (string.IsNullOrEmpty(eventName))
+            if (!_eventHandlers.TryGetValue(gameEvent.EventName, out var handlers))
+            {
                 return;
-            
-            if (_eventHandlers.TryGetValue(eventName, out var handlers))
+            }
+
+            foreach (var handler in handlers)
             {
-                Logger.Debug($"Triggering event: {eventName} with {handlers.Count} handlers");
-                
-                // Create a copy to prevent issues if handlers are modified during iteration
-                var handlersCopy = new List<Action<object[]>>(handlers);
-                
-                foreach (var handler in handlersCopy)
+                try
                 {
-                    try
+                    handler.OnEvent(gameEvent);
+                    if (gameEvent.IsCancellable && gameEvent.IsCancelled)
                     {
-                        handler(args);
+                        break;
                     }
-                    catch (Exception ex)
-                    {
-                        Logger.Error($"Error in event handler for {eventName}: {ex.Message}");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log.LogError($"Error in event handler for {gameEvent.EventName}: {ex}");
                 }
             }
         }
-        
-        /// <summary>
-        /// Distributes game lifecycle events to mods that implement IModEvents
-        /// </summary>
-        public void DistributeGameEvents()
-        {
-            foreach (var modContainer in _modManager.LoadedMods)
-            {
-                if (modContainer.IsInitialized && modContainer.Mod is IModEvents modEvents)
-                {
-                    // Register this mod for game events
-                    RegisterGameEventListeners(modEvents);
-                }
-            }
-        }
-        
-        /// <summary>
-        /// Registers a mod for game lifecycle events
-        /// </summary>
-        /// <param name="modEvents">The mod events implementation</param>
-        private void RegisterGameEventListeners(IModEvents modEvents)
-        {
-            // These handlers will forward events to mods
-            RegisterHandler("GameStartLoading", _ => modEvents.OnGameStartLoading());
-            RegisterHandler("GameLoaded", _ => modEvents.OnGameLoaded());
-            RegisterHandler("GameUpdate", args => modEvents.OnUpdate((float)args[0]));
-            RegisterHandler("GameUnloading", _ => modEvents.OnGameUnloading());
-        }
-        
-        /// <summary>
-        /// Clears all event handlers
-        /// </summary>
-        public void ClearAllHandlers()
+
+        public void ClearHandlers()
         {
             _eventHandlers.Clear();
-            Logger.Debug("Cleared all event handlers");
         }
     }
-}
+} 

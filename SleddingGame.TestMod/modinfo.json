@@ -1,9 +1,0 @@
-﻿{
-  "Id": "test_mod",
-  "Name": "Test Mod",
-  "Author": "Xndr",
-  "Version": "0.1.0",
-  "Description": "A test mod for the Sledding Game mod framework",
-  "Website": "https://example.com",
-  "Dependencies": []
-}
