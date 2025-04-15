@@ -1,6 +1,7 @@
 # Sledding Game Mod Framework
 
 A modding framework for Sledding Game that allows modders to create and load mods easily.
+This is a fan made project and not affiliated with the real sledding game!
 
 ## Installation
 
