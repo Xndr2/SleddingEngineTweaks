@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="72f134fc-6a30-4cc1-80e7-6ba2200f7b02" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SleddingEngineTweaks.sln" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SleddingEngineTweaks/ImGuiController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SleddingEngineTweaks/Plugin.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SleddingEngineTweaks/SleddingEngineTweaks.csproj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SleddingEngineTweaks/UI/ModOption.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SleddingEngineTweaks/UI/ModPanel.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SleddingEngineTweaks/UI/ModTab.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SleddingEngineTweaks/UI/Options/Base/ModOption_Button.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SleddingEngineTweaks/UI/Options/Base/ModOption_Label.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SleddingEngineTweaks/UI/Options/Base/ModOption_Selector.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SleddingEngineTweaks/UI/Options/Btn_MasterKey.cs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/9c2967a135e648bdb993c5397a44991b573620/5e/7396f990/List`1.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/b30ed2708c9f4c929c73802cfeb4e7c516e00/05/d192ff55/GUI.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/b30ed2708c9f4c929c73802cfeb4e7c516e00/cd/b7908a59/GUIStyle.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/dbb0ce7b96144bd8bcbcb8b0d765f97010d200/ee/23096a02/InputControl`1.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/SleddingEngineTweaks/ImGuiController.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/SleddingEngineTweaks/Plugin.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/SleddingEngineTweaks/UI/ModOption.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/SleddingEngineTweaks/UI/ModPanel.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/SleddingEngineTweaks/UI/ModTab.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/SleddingEngineTweaks/UI/Options/Base/ModOption_Button.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/SleddingEngineTweaks/UI/Options/Base/ModOption_Label.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/SleddingEngineTweaks/UI/Options/Btn_MasterKey.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/SleddingEngineTweaks/obj/Debug/net48/MyPluginInfo.cs" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="2x37fxblQhsFHsEFEgsdOOIBBWf" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;RiderNuGetOptionsPageId&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager">
+    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost">
+      <option name="allowRunningInParallel" value="false" />
+      <option name="listenPortForConnections" value="false" />
+      <option name="pid" />
+      <option name="projectPathOnTarget" />
+      <option name="runtimes">
+        <list />
+      </option>
+      <option name="selectedOptions">
+        <list />
+      </option>
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="72f134fc-6a30-4cc1-80e7-6ba2200f7b02" name="Changes" comment="" />
+      <created>1747155010685</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1747155010685</updated>
+      <workItem from="1747155011832" duration="7109000" />
+      <workItem from="1747169829876" duration="2126000" />
+      <workItem from="1747212727486" duration="3192000" />
+      <workItem from="1747255764521" duration="92000" />
+      <workItem from="1748370490900" duration="1514000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="UnityProjectDiscoverer">
+    <option name="hasUnityReference" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+  </component>
+</project>
