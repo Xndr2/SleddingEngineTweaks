@@ -22,6 +22,7 @@ A modding framework for Sledding Game that allows modders to create and load mod
 - 🟢 UI system
 - 🔴 Game state access
 - 🔴 Mod dependencies and version checking
+- 🟠 Lua scripting support for mods
 
 ## License
 
