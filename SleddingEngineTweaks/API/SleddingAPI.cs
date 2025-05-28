@@ -12,7 +12,7 @@ namespace SleddingEngineTweaks.API
         {
             ModPanel panel = GetModPanel(modName);
             if (panel != null) return SleddingAPIStatus.ModPanelAlreadyRegistered;
-            panel = new ModPanel(modName, new Rect(400, 10, 350, 300));
+            panel = new ModPanel(modName, new Rect(400, 10, 10, 10));
             modPanels.Add(modName, panel);
             return SleddingAPIStatus.Ok;
         }

@@ -3,7 +3,6 @@ using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using SleddingEngineTweaks.API;
 
-
 namespace SleddingEngineTweaks.UI
 {
     public class ModPanel
@@ -20,16 +19,13 @@ namespace SleddingEngineTweaks.UI
             WindowRect = rect;
         }
 
-        
         public SleddingAPIStatus AddTab(string tabName)
         {
-            // check if the tab already exists
             foreach (ModTab tab in tabs)
             {
                 if (tab.GetName() == tabName)
                     return SleddingAPIStatus.ModTabAlreadyRegistered;
             }
-            // add the tab if none exists
             ModTab newTab = new ModTab(tabName);
             tabs.Add(newTab);
             return SleddingAPIStatus.Ok;
@@ -37,7 +33,6 @@ namespace SleddingEngineTweaks.UI
 
         public SleddingAPIStatus AddOption(string tabName, string optionName, OptionType optionType)
         {
-            // find the correct tab from the list, and add an option to it
             foreach (ModTab tab in tabs)
             {
                 if (tab.GetName() == tabName)
@@ -51,7 +46,6 @@ namespace SleddingEngineTweaks.UI
 
         public SleddingAPIStatus AddOption(string tabName, ModOption option)
         {
-            // find the correct tab from the list, and add an option to it
             foreach (ModTab tab in tabs)
             {
                 if (tab.GetName() == tabName)
@@ -65,46 +59,54 @@ namespace SleddingEngineTweaks.UI
 
         public void Render(GUIStyle style)
         {
-            WindowRect = GUI.Window(Name.GetHashCode(), WindowRect, DrawWindow, Name, style);
+            WindowRect = GUILayout.Window(Name.GetHashCode(), WindowRect, DrawWindow, "", style);
+
+            // Optional: enforce minimum size
+            // WindowRect.width = Mathf.Max(WindowRect.width, 250f);
+            // WindowRect.height = Mathf.Max(WindowRect.height, 100f);
         }
 
         private void DrawWindow(int id)
         {
-            GUI.DragWindow(new Rect(0, 0, WindowRect.width - 60, 20));
-            
-            // collapsing header
-            var button = GUI.skin.button;
-            button.fontSize = 16;
-            if (GUI.Button(new Rect(WindowRect.width - 50, 0, 40, 20), Collapsed ? "▼" : "▲", button))
+            // Header: Name + Collapse Button
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(Name, GUILayout.ExpandWidth(true));
+            if (GUILayout.Button(Collapsed ? "▼" : "▲", GUILayout.Width(40)))
             {
                 Collapsed = !Collapsed;
             }
+            GUILayout.EndHorizontal();
 
-            if (!Collapsed)
+            // Allow dragging from the top bar
+            GUI.DragWindow(new Rect(0, 0, 10000, 20));
+
+            if (Collapsed)
             {
-                GUILayout.BeginVertical();
-                
-                GUILayout.Space(10);
-                
-                // tabs names
+                WindowRect.height = 50; // Just header height
+                return;
+            }
+
+            GUILayout.Space(5);
+
+            // Tabs
+            if (tabs.Count > 0)
+            {
                 GUILayout.BeginHorizontal();
-                foreach (var tab in tabs)
+                for (int i = 0; i < tabs.Count; i++)
                 {
-                    if (GUILayout.Toggle(currentTab == tabs.IndexOf(tab), tab.GetName(), GUI.skin.button))
-                        currentTab = tabs.IndexOf(tab);
+                    if (GUILayout.Toggle(currentTab == i, tabs[i].GetName(), GUI.skin.button))
+                    {
+                        currentTab = i;
+                    }
                 }
                 GUILayout.EndHorizontal();
-                
-                GUILayout.Space(10);
-                
-                // options for current tab
-                foreach (var tab in tabs)
-                {
-                    if (currentTab == tabs.IndexOf(tab))
-                        tab.Render();
-                }
-                
-                GUILayout.EndVertical();
+                GUILayout.Space(5);
+            }
+
+            // Render options for current tab
+            if (currentTab >= 0 && currentTab < tabs.Count)
+            {
+                tabs[currentTab].Render();
             }
         }
     }

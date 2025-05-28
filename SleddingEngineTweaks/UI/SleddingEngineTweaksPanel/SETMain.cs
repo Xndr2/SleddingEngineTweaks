@@ -23,6 +23,7 @@ namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
             SleddingAPI.RegisterModTab(modName, "Keybinds");
             SleddingAPI.RegisterModTab(modName, "Console");
             SleddingAPI.RegisterModTab(modName, "Debug");
+            SleddingAPI.RegisterModTab(modName, "Extra");
 
             SleddingAPI.RegisterOption(modName, "Options", "Test", OptionType.Label);
             SleddingAPI.RegisterOption(modName, "Options", "Test 2", OptionType.Label);
