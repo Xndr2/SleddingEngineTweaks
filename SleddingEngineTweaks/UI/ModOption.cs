@@ -16,6 +16,11 @@
             return _name;
         }
 
+        public OptionType GetOptionType()
+        {
+            return _type;
+        }
+
         public string GetTypeName()
         {
             return _type.ToString();

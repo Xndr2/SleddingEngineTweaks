@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using SleddingEngineTweaks.API;
 
 
 namespace SleddingEngineTweaks.UI
@@ -20,18 +21,46 @@ namespace SleddingEngineTweaks.UI
         }
 
         
-        public void AddTab(string tabName)
+        public SleddingAPIStatus AddTab(string tabName)
         {
-            ModTab tab = new ModTab(tabName);
-            tabs.Add(tab);
-        }
-
-        public void AddOption(string tabName, string optionName, OptionType optionType)
-        {
+            // check if the tab already exists
             foreach (ModTab tab in tabs)
             {
-                if (tab.GetName() == tabName) tab.AddOption(optionName, optionType);
+                if (tab.GetName() == tabName)
+                    return SleddingAPIStatus.ModTabAlreadyRegistered;
             }
+            // add the tab if none exists
+            ModTab newTab = new ModTab(tabName);
+            tabs.Add(newTab);
+            return SleddingAPIStatus.Ok;
+        }
+
+        public SleddingAPIStatus AddOption(string tabName, string optionName, OptionType optionType)
+        {
+            // find the correct tab from the list, and add an option to it
+            foreach (ModTab tab in tabs)
+            {
+                if (tab.GetName() == tabName)
+                {
+                    tab.AddOption(optionName, optionType);
+                    return SleddingAPIStatus.Ok;
+                }
+            }
+            return SleddingAPIStatus.ModTabNotFound;
+        }
+
+        public SleddingAPIStatus AddOption(string tabName, ModOption option)
+        {
+            // find the correct tab from the list, and add an option to it
+            foreach (ModTab tab in tabs)
+            {
+                if (tab.GetName() == tabName)
+                {
+                    tab.AddOption(option);
+                    return SleddingAPIStatus.Ok;
+                }
+            }
+            return SleddingAPIStatus.ModTabNotFound;
         }
 
         public void Render(GUIStyle style)

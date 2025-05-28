@@ -1,6 +1,9 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
-using SleddingEngineTweaks;
+using System;
+using System.Collections.Generic;
+using SleddingEngineTweaks.UI;
+using SleddingEngineTweaks.UI.SleddingEngineTweaksPanel;
 using UnityEngine;
 
 namespace SleddingEngineTweaks;
@@ -9,12 +12,15 @@ namespace SleddingEngineTweaks;
 public class Plugin : BaseUnityPlugin
 {
     internal static ManualLogSource StaticLogger;
+    private static ImGuiController _controller;
 
     private void Awake()
     {
         // Plugin startup logic
         StaticLogger = base.Logger;
         StaticLogger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} awake");
-        ImGuiController.Setup();
+        _controller = new();
+        _controller.Setup();
+        SETMain main = new SETMain();
     }
 }

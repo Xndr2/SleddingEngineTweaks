@@ -41,6 +41,11 @@ namespace SleddingEngineTweaks.UI
             options.Add(option);
         }
 
+        public void AddOption(ModOption option)
+        {
+            options.Add(option);
+        }
+
         public void Render()
         {
             foreach (var option in options)

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using SleddingEngineTweaks.UI;
+﻿using SleddingEngineTweaks.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
+using SleddingEngineTweaks.API;
 
 namespace SleddingEngineTweaks
 {
@@ -11,10 +11,8 @@ namespace SleddingEngineTweaks
         internal static ImGuiController Instance { get; private set; }
         
         private bool showUI = true;
-
-        private Dictionary<string, ModPanel> modPanels = new();
         
-        internal static void Setup()
+        internal void Setup()
         {
             GameObject obj = new GameObject("ImGuiController");
             DontDestroyOnLoad(obj);
@@ -25,16 +23,6 @@ namespace SleddingEngineTweaks
         void Start()
         {
             Plugin.StaticLogger.LogInfo($"Controller start");
-            
-            // // Sample Mod Panels
-            AddPanel("SleddingEngineTweaks");
-            AddTab("SleddingEngineTweaks", "Main");
-            AddOption("SleddingEngineTweaks", "Main", "Option 1", OptionType.Label);
-            AddOption("SleddingEngineTweaks", "Main", "Option 2", OptionType.Label);
-            AddTab("SleddingEngineTweaks", "Keybinds");
-            AddOption("SleddingEngineTweaks", "Keybinds", "Option 4", OptionType.Button);
-            
-            AddPanel("Test 2");
         }
 
         private bool IsDown = false;
@@ -60,26 +48,7 @@ namespace SleddingEngineTweaks
             showUI = !showUI;
         }
 
-        public void AddPanel(string modName)
-        {
-            ModPanel panel = new ModPanel(modName, new Rect(400, 10, 350, 300));
-            modPanels.Add(modName, panel);
-        }
-
-        public bool AddTab(string modName, string tabName)
-        {
-            ModPanel panel = modPanels[modName];
-            if(panel == null) return false;
-            
-            panel.AddTab(tabName);
-            return true;
-        }
-
-        public void AddOption(string modName, string tabName, string optionName, OptionType optionType)
-        {
-            ModPanel panel = modPanels[modName];
-            panel.AddOption(tabName, optionName, optionType);
-        }
+        
 
         private void OnGUI()
         {
@@ -93,7 +62,7 @@ namespace SleddingEngineTweaks
                 fontSize = 14
             };
 
-            foreach (var panel in modPanels.Values)
+            foreach (var panel in SleddingAPI.GetAllModPanels().Values)
             {
                 panel.Render(panelStyle);
             }
