@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using SleddingEngineTweaks.API;
-using SleddingEngineTweaks.UI.Options;
+using SleddingEngineTweaks.UI.Options.Options;
+using UnityEngine;
 
 namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
 {
@@ -15,19 +16,22 @@ namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
 
         public void Setup()
         {
-            Btn_MasterKey masterKey = new Btn_MasterKey("N/A", "Master Key");
+            BtnMasterKey masterKey = new BtnMasterKey();
+            SelectShowOnStart selectShowOnStart = new SelectShowOnStart();
             
             SleddingAPI.RegisterModPanel(modName);
 
             SleddingAPI.RegisterModTab(modName, "Options");
+            SleddingAPI.RegisterOption(modName, "Options", $"SET Version: {MyPluginInfo.PLUGIN_VERSION}", OptionType.Label);
+            SleddingAPI.RegisterOption(modName, "Options", $"Sledding Game Version: {Application.version}", OptionType.Label);
+            SleddingAPI.RegisterOption(modName, "Options", selectShowOnStart);
+            
             SleddingAPI.RegisterModTab(modName, "Keybinds");
+            SleddingAPI.RegisterOption(modName, "Keybinds", masterKey);
+            
             SleddingAPI.RegisterModTab(modName, "Console");
             SleddingAPI.RegisterModTab(modName, "Debug");
             SleddingAPI.RegisterModTab(modName, "Extra");
-
-            SleddingAPI.RegisterOption(modName, "Options", "Test", OptionType.Label);
-            SleddingAPI.RegisterOption(modName, "Options", "Test 2", OptionType.Label);
-            SleddingAPI.RegisterOption(modName, "Keybinds", masterKey);
         }
     }
 }

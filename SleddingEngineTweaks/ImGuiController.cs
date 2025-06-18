@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using BepInEx.Configuration;
 using SleddingEngineTweaks.API;
 
 namespace SleddingEngineTweaks
@@ -10,7 +11,7 @@ namespace SleddingEngineTweaks
     {
         internal static ImGuiController Instance { get; private set; }
         
-        private bool showUI = true;
+        private bool showUI = Plugin.ShowOnStart.Value;
         
         internal void Setup()
         {
@@ -28,7 +29,7 @@ namespace SleddingEngineTweaks
         private bool IsDown = false;
         void Update()
         {
-            if (Keyboard.current.deleteKey.wasPressedThisFrame)
+            if (Keyboard.current[Plugin.MasterKey.Value].wasPressedThisFrame)
             {
                 if (!IsDown)
                 {
@@ -36,7 +37,7 @@ namespace SleddingEngineTweaks
                 }
             }
 
-            if (Keyboard.current.deleteKey.wasReleasedThisFrame)
+            if (Keyboard.current[Plugin.MasterKey.Value].wasReleasedThisFrame)
             {
                 IsDown = false;
             }

@@ -16,6 +16,12 @@
             return _name;
         }
 
+        public void SetName(string name)
+        {
+            if (name == null || _name.Equals(name)) return;
+            _name = name;
+        }
+
         public OptionType GetOptionType()
         {
             return _type;

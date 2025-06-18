@@ -45,6 +45,18 @@ namespace SleddingEngineTweaks.UI
         {
             options.Add(option);
         }
+        
+        public void UpdateOption(string newText, OptionType optionType)
+        {
+            foreach (var option in options)
+            {
+                if (option.GetOptionType() == optionType)
+                {
+                    option.SetName(newText);
+                    break;
+                }
+            }
+        }
 
         public void Render()
         {

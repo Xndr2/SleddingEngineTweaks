@@ -12,11 +12,20 @@ namespace SleddingEngineTweaks.UI
         public bool Collapsed = false;
         private List<ModTab> tabs = new();
         private int currentTab = 0;
+        private Vector2 lastPosition;
+
+        public const float MIN_WIDTH = 250f;
+        public const float MIN_HEIGHT = 150f;
+        public const float HEADER_HEIGHT = 50f;
+
 
         public ModPanel(string name, Rect rect)
         {
             Name = name;
+            rect.width = Mathf.Max(rect.width, MIN_WIDTH);
+            rect.height = Mathf.Max(rect.height, MIN_HEIGHT);
             WindowRect = rect;
+            lastPosition = new Vector2(rect.x, rect.y);
         }
 
         public SleddingAPIStatus AddTab(string tabName)
@@ -56,14 +65,37 @@ namespace SleddingEngineTweaks.UI
             }
             return SleddingAPIStatus.ModTabNotFound;
         }
+        
+        public SleddingAPIStatus UpdateOption(string tabName, string newText, OptionType optionType)
+        {
+            foreach (ModTab tab in tabs)
+            {
+                if (tab.GetName() == tabName)
+                {
+                    tab.UpdateOption(newText, optionType);
+                    return SleddingAPIStatus.Ok;
+                }
+            }
+            return SleddingAPIStatus.ModTabNotFound;
+        }
 
         public void Render(GUIStyle style)
         {
             WindowRect = GUILayout.Window(Name.GetHashCode(), WindowRect, DrawWindow, "", style);
 
-            // Optional: enforce minimum size
-            // WindowRect.width = Mathf.Max(WindowRect.width, 250f);
-            // WindowRect.height = Mathf.Max(WindowRect.height, 100f);
+            // Enforce minimum size
+            WindowRect.width = Mathf.Max(WindowRect.width, MIN_WIDTH);
+            WindowRect.height = Mathf.Max(WindowRect.height, Collapsed ? HEADER_HEIGHT : MIN_HEIGHT);
+
+            // Add position saving
+            Vector2 currentPosition = new Vector2(WindowRect.x, WindowRect.y);
+            if (Vector2.Distance(lastPosition, currentPosition) > 1f)
+            {
+                lastPosition = currentPosition;
+                Plugin.SavePanelPosition(Name, WindowRect);
+            }
+
+
         }
 
         private void DrawWindow(int id)

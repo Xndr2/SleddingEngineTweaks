@@ -4,10 +4,10 @@ namespace SleddingEngineTweaks.UI.Options.Base
 {
     public class ModOption_Button : ModOption
     {
-        private bool _isPressed = false;
-        private string _labelName = "";
+        protected bool IsPressed = false;
+        private string _labelName;
         
-        public ModOption_Button(string name, string labelName) : base(name, OptionType.Button)
+        public ModOption_Button(string name, string labelName = "") : base(name, OptionType.Button)
         {
             _labelName = labelName;
         }
@@ -16,22 +16,20 @@ namespace SleddingEngineTweaks.UI.Options.Base
 
         public override void Render()
         {
+            if (!string.IsNullOrEmpty(_labelName))
+                GUILayout.BeginHorizontal();
+            
             if (!_labelName.Equals(""))
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(_labelName);
             }
-            if (GUILayout.Button(_isPressed ? "press a button" : GetName()))
+            if (GUILayout.Button(GetName()))
             {
-                if (!_isPressed)
-                    OnPress();
+                if (!IsPressed)
+                    IsPressed = true;
             }
             if(!_labelName.Equals("")) GUILayout.EndHorizontal();
-        }
-
-        public void OnPress()
-        {
-            _isPressed = true;
         }
     }
 }

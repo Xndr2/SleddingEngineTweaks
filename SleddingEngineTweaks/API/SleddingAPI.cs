@@ -7,13 +7,30 @@ namespace SleddingEngineTweaks.API
     public static class SleddingAPI
     {
         private static Dictionary<string, ModPanel> modPanels = new();
+        private static float nextPanelX = 20f;
+        private const float PANEL_SPACING = 20f;
 
         public static SleddingAPIStatus RegisterModPanel(string modName)
         {
-            ModPanel panel = GetModPanel(modName);
-            if (panel != null) return SleddingAPIStatus.ModPanelAlreadyRegistered;
-            panel = new ModPanel(modName, new Rect(400, 10, 10, 10));
+           
+            if (GetModPanel(modName) != null) return SleddingAPIStatus.ModPanelAlreadyRegistered;
+            
+            // Load saved position or use next available position
+            Vector2 savedPos = Plugin.LoadPanelPosition(modName);
+            float x = savedPos.x >= 0 ? savedPos.x : nextPanelX;
+            float y = savedPos.y >= 0 ? savedPos.y : 20f;
+            
+            var panel = new ModPanel(modName, new Rect(x, y, ModPanel.MIN_WIDTH, ModPanel.MIN_HEIGHT));
             modPanels.Add(modName, panel);
+
+            
+            // Only update nextPanelX if we're not using a saved position
+            if (savedPos.x < 0)
+            {
+                nextPanelX += ModPanel.MIN_WIDTH + PANEL_SPACING;
+            }
+
+            
             return SleddingAPIStatus.Ok;
         }
 
@@ -37,6 +54,15 @@ namespace SleddingEngineTweaks.API
             ModPanel panel = GetModPanel(modName);
             if (panel == null) return SleddingAPIStatus.ModPanelNotFound;
             return panel.AddOption(tabName, option);
+        }
+        
+        public static SleddingAPIStatus UpdateOption(string modName, string tabName, string newText, OptionType optionType)
+        {
+            if (!modPanels.ContainsKey(modName))
+                return SleddingAPIStatus.ModPanelNotFound;
+
+            var panel = modPanels[modName];
+            return panel.UpdateOption(tabName, newText, optionType);
         }
 
         public static ModPanel GetModPanel(string modName)

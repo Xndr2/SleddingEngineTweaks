@@ -52,6 +52,10 @@
         <Reference Include="UnityEngine.IMGUIModule.dll">
             <HintPath>$(LethalCompanyDir)Lethal Company_Data/Managed/UnityEngine.IMGUIModule.dll</HintPath>
         </Reference>
+        <Reference Include="MoonSharp.Interpreter">
+            <HintPath>lib\MoonSharp.Interpreter.dll</HintPath>
+            <Private>true</Private>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
@@ -61,7 +65,7 @@
     <!-- Post-build event to copy all DLLs from build output to the plugin's lib directory -->
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <PropertyGroup>
-            <PluginLibDir>$(LethalCompanyDir)BepInEx\plugins\</PluginLibDir>
+            <PluginLibDir>$(LethalCompanyDir)BepInEx\plugins\SleddingEngineTweaks</PluginLibDir>
         </PropertyGroup>
 
         <!-- Copy all DLLs from build output to plugin lib folder -->
