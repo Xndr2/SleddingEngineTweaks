@@ -1,18 +1,14 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace SleddingEngineTweaks.UI.Options.Base
 {
     public class ModOption_Selector : ModOption
     {
-        private bool _enabled = false;
-        private bool isDown = false;
+        private bool _enabled;
+        public event Action<bool> ValueChanged;
 
-        public ModOption_Selector(string name) : base(name, OptionType.Selector)
-        {
-            _enabled = false;
-        }
-
-        public ModOption_Selector(string name, bool enabled) : base(name, OptionType.Selector)
+        public ModOption_Selector(string name, bool enabled = false) : base(name, OptionType.Selector)
         {
             _enabled = enabled;
         }
@@ -20,30 +16,18 @@ namespace SleddingEngineTweaks.UI.Options.Base
         public override void Render()
         {
             bool previous = _enabled;
-            
-            if (GUILayout.Toggle(_enabled, GetName()))
-            {
-                if (!isDown)
-                {
-                    isDown = true;
-                    _enabled = !_enabled;
-                }
-            }
-            else
-            {
-                isDown = false;
-            }
-            
-            // check for change
+            _enabled = GUILayout.Toggle(_enabled, GetName());
+
             if (_enabled != previous)
             {
                 OnToggleChanged(_enabled);
+                ValueChanged?.Invoke(_enabled);
             }
         }
 
         public virtual void OnToggleChanged(bool value)
         {
-            // child will override this
+            // For subclasses to override if needed
         }
 
         public bool IsEnabled() => _enabled;

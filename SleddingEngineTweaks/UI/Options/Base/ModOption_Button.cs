@@ -1,35 +1,47 @@
 ﻿using UnityEngine;
+using System;
 
 namespace SleddingEngineTweaks.UI.Options.Base
 {
     public class ModOption_Button : ModOption
     {
-        protected bool IsPressed = false;
-        private string _labelName;
+        protected bool IsPressed { get; set; } = false;
+        private readonly string _labelName;
+        
+        public event Action Clicked;
         
         public ModOption_Button(string name, string labelName = "") : base(name, OptionType.Button)
         {
             _labelName = labelName;
         }
 
-        public ModOption_Button(string name) : base(name, OptionType.Button) {}
-
         public override void Render()
         {
-            if (!string.IsNullOrEmpty(_labelName))
-                GUILayout.BeginHorizontal();
-            
-            if (!_labelName.Equals(""))
+            bool hasLabel = !string.IsNullOrEmpty(_labelName);
+            if (hasLabel)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(_labelName);
             }
+
             if (GUILayout.Button(GetName()))
             {
-                if (!IsPressed)
-                    IsPressed = true;
+                OnClicked();
             }
-            if(!_labelName.Equals("")) GUILayout.EndHorizontal();
+
+            if (hasLabel)
+            {
+                GUILayout.EndHorizontal();
+            }
+        }
+
+        protected virtual void OnClicked()
+        {
+            if (!IsPressed)
+            {
+                IsPressed = true;
+            }
+            Clicked?.Invoke();
         }
     }
 }

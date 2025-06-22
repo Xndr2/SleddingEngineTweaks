@@ -2,6 +2,9 @@
 using MoonSharp.Interpreter.Interop;
 using UnityEngine;
 using SleddingEngineTweaks.UI;
+using SleddingEngineTweaks.UI.Options.Base;
+using System;
+using UnityEngine.InputSystem;
 
 namespace SleddingEngineTweaks.API
 {
@@ -18,7 +21,7 @@ namespace SleddingEngineTweaks.API
         [MoonSharpVisible(true)]
         public void Log(string message)
         {
-            Debug.Log($"[Lua] {message}");
+            Plugin.StaticLogger.LogInfo($"[Lua] {message}");
         }
         
         #region UI Methods
@@ -46,7 +49,130 @@ namespace SleddingEngineTweaks.API
         {
             return SleddingAPI.UpdateOption(modName, tabName, newText, OptionType.Label) == SleddingAPIStatus.Ok;
         }
+
+        [MoonSharpVisible(true)]
+        public bool RegisterButtonOption(string modName, string tabName, string buttonText, DynValue callback)
+        {
+            if (callback == null || callback.Type != DataType.Function)
+            {
+                Log("RegisterButtonOption requires a valid function callback.");
+                return false;
+            }
+            
+            var button = new ModOption_Button(buttonText);
+            button.Clicked += () =>
+            {
+                try
+                {
+                    callback.Function.Call();
+                }
+                catch (ScriptRuntimeException ex)
+                {
+                    Log($"Error in button callback: {ex.DecoratedMessage}");
+                }
+
+            };
+            
+            return SleddingAPI.RegisterOption(modName, tabName, button) == SleddingAPIStatus.Ok;
+        }
         
+        [MoonSharpVisible(true)]
+        public bool RegisterSelectorOption(string modName, string tabName, string selectorText, bool defaultValue, DynValue callback)
+        {
+            if (callback == null || callback.Type != DataType.Function)
+            {
+                Log("RegisterSelectorOption requires a valid function callback.");
+                return false;
+            }
+
+            var selector = new ModOption_Selector(selectorText, defaultValue);
+            selector.ValueChanged += (newValue) =>
+            {
+                try
+                {
+                    callback.Function.Call(newValue);
+                }
+                catch (ScriptRuntimeException ex)
+                {
+                    Log($"Error in selector callback: {ex.DecoratedMessage}");
+                }
+
+            };
+
+            return SleddingAPI.RegisterOption(modName, tabName, selector) == SleddingAPIStatus.Ok;
+        }
+        
+        #endregion
+        
+        #region Player Methods
+
+        [MoonSharpVisible(true)]
+        public GameObject GetPlayer()
+        {
+            // Assuming the player GameObject is tagged with "Player"
+            return GameObject.FindGameObjectWithTag("Player");
+        }
+
+        [MoonSharpVisible(true)]
+        public Vector3 GetPlayerPosition()
+        {
+            var player = GetPlayer();
+            return player != null ? player.transform.position : Vector3.zero;
+        }
+
+        [MoonSharpVisible(true)]
+        public void SetPlayerPosition(Vector3 position)
+        {
+            var player = GetPlayer();
+            if (player != null)
+            {
+                player.transform.position = position;
+            }
+        }
+
+        #endregion
+
+        #region Input Methods
+
+        [MoonSharpVisible(true)]
+        public bool WasKeyPressedThisFrame(string keyName)
+        {
+            if (Keyboard.current != null && Enum.TryParse<Key>(keyName, true, out var key))
+            {
+                return Keyboard.current[key].wasPressedThisFrame;
+            }
+            return false;
+        }
+        
+        [MoonSharpVisible(true)]
+        public bool IsKeyDown(string keyName)
+        {
+            if (Keyboard.current != null && Enum.TryParse<Key>(keyName, true, out var key))
+            {
+                return Keyboard.current[key].isPressed;
+            }
+            return false;
+        }
+
+        #endregion
+
+        #region Configuration Methods
+
+        [MoonSharpVisible(true)]
+        public string GetConfigValue(string section, string key, string defaultValue)
+        {
+            var configEntry = _plugin.Config.Bind(section, key, defaultValue);
+            return configEntry.Value;
+        }
+
+        [MoonSharpVisible(true)]
+        public void SetConfigValue(string section, string key, string value)
+        {
+            var configEntry = _plugin.Config.Bind(section, key, "");
+            configEntry.Value = value;
+            _plugin.Config.Save();
+        }
+
         #endregion
         
         #region Game State Methods

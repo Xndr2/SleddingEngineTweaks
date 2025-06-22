@@ -18,7 +18,7 @@ namespace SleddingEngineTweaks
     {
         internal static ManualLogSource StaticLogger;
         private static ImGuiController _controller;
-        private LuaManager _luaManager;
+        public LuaManager LuaManager { get; private set; }
     
         // config
         public static ConfigEntry<Key> MasterKey;
@@ -38,12 +38,12 @@ namespace SleddingEngineTweaks
             StaticLogger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} awake");
         
             // init lua manager
-            _luaManager = LuaManager.Instance;
+            LuaManager = LuaManager.Instance;
         
             // register logger for lua scripts
-            _luaManager.RegisterGlobal("log", new Action<string>(message => 
+            LuaManager.RegisterGlobal("log", new Action<string>(message => 
             {
-                _luaManager.OutputMessage(message);
+                LuaManager.OutputMessage(message);
             }));
 
         
@@ -56,7 +56,7 @@ namespace SleddingEngineTweaks
             SETMain main = new SETMain();
         
             // load all lua scripts in the scripts folder
-            _luaManager.LoadAllScripts();
+            LuaManager.LoadAllScripts();
         
             StaticLogger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} loaded!");
         }
@@ -65,7 +65,7 @@ namespace SleddingEngineTweaks
         {
             // Create an API object that exposes safe game functionality to Lua
             var gameAPI = new GameAPI(this);
-            _luaManager.RegisterGlobal("game", gameAPI);
+            LuaManager.RegisterGlobal("game", gameAPI);
         }
         
         public static void SavePanelPosition(string panelName, Rect position)
