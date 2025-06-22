@@ -58,7 +58,7 @@ namespace SleddingEngineTweaks.UI
             }
         }
 
-        public void Render()
+        public virtual void Render()
         {
             foreach (var option in options)
             {

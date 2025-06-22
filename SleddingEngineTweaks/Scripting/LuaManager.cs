@@ -25,6 +25,7 @@ namespace SleddingEngineTweaks.Scripting
         
         private Script _luaScript;
         private string _scriptPath;
+        public event Action<string> OnScriptOutput;
 
         public LuaManager()
         {
@@ -109,6 +110,18 @@ namespace SleddingEngineTweaks.Scripting
             _luaScript.Globals["Vector3_forward"] = Vector3.forward;
             _luaScript.Globals["Vector3_back"] = Vector3.back;
 
+            _luaScript.Globals["log"] = new Action<DynValue>((message) =>
+            {
+                OutputMessage(message.ToString());
+            });
+
+            _luaScript.Globals["help"] = new Action(() =>
+            {
+                OutputMessage("Available commands:");
+                OutputMessage("help() - Shows this help message");
+                OutputMessage("log(message) - Logs a message");
+                // TODO: add more
+            });
         }
 
         public DynValue ExecuteScript(string luaCode)
@@ -180,6 +193,33 @@ namespace SleddingEngineTweaks.Scripting
             {
                 Plugin.StaticLogger.LogError($"Error calling Lua function {functionName}: {e.Message}");
             }
+        }
+        
+        public DynValue ExecuteCommand(string command)
+        {
+            try
+            {
+                DynValue result = _luaScript.DoString(command);
+                // Output the result if it's not nil and not from a print statement
+                if (result != null && !result.IsNil() && !command.Trim().StartsWith("print"))
+                {
+                    OutputMessage($"=> {result}");
+                }
+                return result;
+            }
+            catch (Exception e)
+            {
+                OutputMessage($"Error: {e.Message}");
+                return DynValue.Nil;
+            }
+
+        }
+
+        
+        public void OutputMessage(string message)
+        {
+            OnScriptOutput?.Invoke(message);
+            Plugin.StaticLogger.LogInfo(message);
         }
 
     }

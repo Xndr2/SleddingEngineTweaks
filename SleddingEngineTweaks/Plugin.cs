@@ -18,7 +18,6 @@ namespace SleddingEngineTweaks
     {
         internal static ManualLogSource StaticLogger;
         private static ImGuiController _controller;
-        private static LuaEventHandler _luaEventHandler;
         private LuaManager _luaManager;
     
         // config
@@ -42,7 +41,11 @@ namespace SleddingEngineTweaks
             _luaManager = LuaManager.Instance;
         
             // register logger for lua scripts
-            _luaManager.RegisterGlobal("log", new Action<string>(StaticLogger.LogInfo));
+            _luaManager.RegisterGlobal("log", new Action<string>(message => 
+            {
+                _luaManager.OutputMessage(message);
+            }));
+
         
             // register any game APIs
             RegisterGameAPI();
@@ -51,9 +54,6 @@ namespace SleddingEngineTweaks
             _controller = new();
             _controller.Setup();
             SETMain main = new SETMain();
-            
-            _luaEventHandler = new LuaEventHandler();
-            _luaEventHandler.Setup();
         
             // load all lua scripts in the scripts folder
             _luaManager.LoadAllScripts();
@@ -72,21 +72,29 @@ namespace SleddingEngineTweaks
         {
             var xEntry = PanelConfigFile.Bind($"PanelPositions", $"{panelName}_x", position.x);
             var yEntry = PanelConfigFile.Bind($"PanelPositions", $"{panelName}_y", position.y);
-    
+            var widthEntry = PanelConfigFile.Bind($"PanelPositions", $"{panelName}_width", position.width);
+            var heightEntry = PanelConfigFile.Bind($"PanelPositions", $"{panelName}_height", position.height);
+
             // Update the values
             xEntry.Value = position.x;
             yEntry.Value = position.y;
-    
+            widthEntry.Value = position.width;
+            heightEntry.Value = position.height;
+
             // Force save the config file
             PanelConfigFile.Save();
         }
+
     
-        public static Vector2 LoadPanelPosition(string panelName)
+        public static Rect LoadPanelRect(string panelName)
         {
             var x = PanelConfigFile.Bind($"PanelPositions", $"{panelName}_x", -1f).Value;
             var y = PanelConfigFile.Bind($"PanelPositions", $"{panelName}_y", -1f).Value;
-            return new Vector2(x, y);
+            var width = PanelConfigFile.Bind($"PanelPositions", $"{panelName}_width", ModPanel.MIN_WIDTH).Value;
+            var height = PanelConfigFile.Bind($"PanelPositions", $"{panelName}_height", ModPanel.MIN_HEIGHT).Value;
+            return new Rect(x, y, width, height);
         }
+
     }
 
 }

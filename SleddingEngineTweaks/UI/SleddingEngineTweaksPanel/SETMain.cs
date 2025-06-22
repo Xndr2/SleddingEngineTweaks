@@ -18,6 +18,7 @@ namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
         {
             BtnMasterKey masterKey = new BtnMasterKey();
             SelectShowOnStart selectShowOnStart = new SelectShowOnStart();
+            ConsoleTab consoleTab = new ConsoleTab();
             
             SleddingAPI.RegisterModPanel(modName);
 
@@ -29,7 +30,8 @@ namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
             SleddingAPI.RegisterModTab(modName, "Keybinds");
             SleddingAPI.RegisterOption(modName, "Keybinds", masterKey);
             
-            SleddingAPI.RegisterModTab(modName, "Console");
+            //SleddingAPI.RegisterModTab(modName, "Console");
+            SleddingAPI.RegisterModTab(modName, consoleTab);
             SleddingAPI.RegisterModTab(modName, "Debug");
             SleddingAPI.RegisterModTab(modName, "Extra");
         }

@@ -15,22 +15,23 @@ namespace SleddingEngineTweaks.API
            
             if (GetModPanel(modName) != null) return SleddingAPIStatus.ModPanelAlreadyRegistered;
             
-            // Load saved position or use next available position
-            Vector2 savedPos = Plugin.LoadPanelPosition(modName);
-            float x = savedPos.x >= 0 ? savedPos.x : nextPanelX;
-            float y = savedPos.y >= 0 ? savedPos.y : 20f;
-            
-            var panel = new ModPanel(modName, new Rect(x, y, ModPanel.MIN_WIDTH, ModPanel.MIN_HEIGHT));
+            // Load saved position and size or use defaults
+            Rect savedRect = Plugin.LoadPanelRect(modName);
+            if (savedRect.x < 0)
+            {
+                savedRect.x = nextPanelX;
+                savedRect.y = 20f;
+            }
+    
+            var panel = new ModPanel(modName, savedRect);
             modPanels.Add(modName, panel);
-
-            
+    
             // Only update nextPanelX if we're not using a saved position
-            if (savedPos.x < 0)
+            if (savedRect.x < 0)
             {
                 nextPanelX += ModPanel.MIN_WIDTH + PANEL_SPACING;
             }
-
-            
+    
             return SleddingAPIStatus.Ok;
         }
 
@@ -39,6 +40,14 @@ namespace SleddingEngineTweaks.API
             ModPanel panel = GetModPanel(modName);
             if (panel == null) return SleddingAPIStatus.ModPanelNotFound;
             panel.AddTab(tabName);
+            return SleddingAPIStatus.Ok;
+        }
+
+        public static SleddingAPIStatus RegisterModTab(string modName, ModTab tab)
+        {
+            ModPanel panel = GetModPanel(modName);
+            if (panel == null) return SleddingAPIStatus.ModPanelNotFound;
+            panel.AddTab(tab);
             return SleddingAPIStatus.Ok;
         }
         
