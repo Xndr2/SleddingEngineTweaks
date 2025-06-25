@@ -1,14 +1,22 @@
 # Sledding Engine Tweaks
+
+## ⚠️ Important Notice
+**Please be aware that Sledding Engine Tweaks is currently under active development and is not yet feature-complete.** Many functionalities may be missing or not fully operational.
+
+This framework is primarily being developed for the upcoming **Sledding Game** on Steam. However, since the game is not yet released, current development and testing of the base framework are being conducted using **Lethal Company**. It should also be compatible with other games built with **Unity 2022.3.9**.
+
+---
+
 Welcome to Sledding Engine Tweaks (SET), a powerful modding framework for Unity games, built on BepInEx. SET provides an advanced Lua scripting layer that allows for the rapid development of custom mods without needing to recompile or restart the game.
 Create new UI, manipulate game objects, listen for keyboard input, change game settings, and much more, all from simple `.lua` script files.
 
 ## Features
-- **Powerful Lua Scripting:** Leverage the lightweight and fast MoonSharp Lua interpreter to run your mods.
-- **Live Script Loading:** Drop `.lua` files into the scripts folder, and they are loaded automatically. No restart required!
-- **Dynamic In-Game UI:** Create your own mod panels with tabs, buttons, labels, and toggles directly from Lua. All UI elements can have their own scriptable callbacks.
-- **Rich Game API:** A secure and extensive `game` API is exposed to Lua, giving you control over the player, game objects, input, configuration, and more.
-- **Persistent Configuration:** Scripts can save and load their own settings, which persist between game sessions.
-- **Built-in Event System:** Hook into core game events like `OnUpdate` and `OnSceneLoaded` to trigger your script's logic.
+- 🟩**Lua Scripting:** Use the MoonSharp Lua interpreter to run your mods.
+- 🟥**Live Script Loading:** Drop `.lua` files into the scripts folder, and they are loaded automatically. No restart required!
+- 🟩**Dynamic In-Game UI:** Create your own mod panels with tabs, buttons, labels, and toggles directly from Lua. All UI elements can have their own scriptable callbacks.
+- 🟧**Rich Game API:** A secure and extensive `game` API is exposed to Lua, giving you control over the player, game objects, input, configuration, and more.
+- 🟩**Persistent Configuration:** Scripts can save and load their own settings, which persist between game sessions.
+- 🟧**Built-in Event System:** Hook into core game events like `OnUpdate` and `OnSceneLoaded` to trigger your script's logic.
 
 ## For Players: Installation
 1. Make sure you have [BepInEx](https://github.com/BepInEx/BepInEx) installed for your game.
@@ -19,9 +27,15 @@ Create new UI, manipulate game objects, listen for keyboard input, change game s
 
 By default, press the **Delete** key to toggle the main UI panel in-game.
 
-## For Developers: Creating Your First Script
+## For Developers
+There are two primary ways to use this framework:
+
+1.  **Via Lua Scripts:** The easiest method is to write small `.lua` scripts. This approach allows for rapid development without compiling code and is ideal for most mods.
+2.  **Via Custom BepInEx Plugins:** For more advanced modifications, you can use the `SleddingEngineTweaks.dll` as a dependency in your own C# BepInEx plugin project. This gives you direct access to the framework's APIs and allows for more complex and powerful creations. You are not required to write Lua scripts if you choose this method.
+
+### Creating Your First Script
 Creating mods with SET is designed to be straightforward. All you need is a text editor.
-### Getting Started: File Structure
+#### Getting Started: File Structure
 1. Navigate to your game's `BepInEx/plugins/SleddingEngineTweaks/` folder.
 2. Create a new folder inside called `scripts`.
 3. Create a new file inside `scripts` with a `.lua` extension (e.g., `MyFirstMod.lua`).
@@ -33,22 +47,20 @@ Your script can implement special global functions that SET will call automatica
 - `OnSceneLoaded(sceneName)`: Called whenever a new scene is loaded in the game. `sceneName` is the name of the new scene.
 
 **Example:**
-```lua
--- ExampleMod.lua
-
+```lua -- ExampleMod.lua
 -- This function will run every frame
 function OnUpdate(deltaTime)
-    -- The built-in log function prints to the BepInEx console.
+    -- The built-in log function prints to the BepInEx console. 
     log("Game is updating! Delta time: " .. tostring(deltaTime))
 end
 
--- This function will run when the main menu loads
-function OnSceneLoaded(sceneName)
-    if sceneName == "MainMenu" then
-        log("Welcome to the main menu!")
+-- This function will run when the main menu loads 
+function OnSceneLoaded(sceneName) 
+    if sceneName == "MainMenu" then -- Or whatever scene name you want to use
+        log("Welcome to the main menu!") 
     end
 end
-```
+``` 
 
 ### The `game` API: Your Toolbox
 SET exposes a global table (object) named `game` to all Lua scripts. This is your primary tool for interacting with the game.
@@ -92,21 +104,16 @@ Save and load settings for your mod. All settings are stored in BepInEx's standa
 
 ### Full Example: "Player Teleporter" Mod
 This script creates a simple UI that saves a teleport location and allows the player to teleport to it with a button press.
-
 ```lua
 -- BepInEx/plugins/SleddingEngineTweaks/scripts/Teleporter.lua
-
 local modName = "Teleporter"
 local teleporterTab = "Main"
 local savedX = 0
 local savedY = 0
 local savedZ = 0
-
 -- A function to run when the script is first loaded.
 -- We use this to set up our UI and load saved values.
-function OnScriptLoad()
-    log(modName .. " script has loaded!")
-
+function OnScriptLoad() log(modName .. " script has loaded!")
     -- Load our saved coordinates from the config file
     savedX = tonumber(game.GetConfigValue(modName, "PosX", "0"))
     savedY = tonumber(game.GetConfigValue(modName, "PosY", "100"))
@@ -130,7 +137,6 @@ function SaveCurrentPosition()
     savedX = playerPos.x
     savedY = playerPos.y
     savedZ = playerPos.z
-
     -- Save the new values to the config file
     game.SetConfigValue(modName, "PosX", tostring(savedX))
     game.SetConfigValue(modName, "PosY", tostring(savedY))
@@ -145,28 +151,18 @@ function OnUpdate(deltaTime)
     if game.WasKeyPressedThisFrame("F5") then
         SaveCurrentPosition()
     end
-
     -- Check if the F6 key was pressed to teleport
     if game.WasKeyPressedThisFrame("F6") then
-        -- We have to create a new Vector3 object to pass to the game API.
-        -- Unfortunately, we can't do this directly in Lua yet, so we have
-        -- to use a small workaround by setting the position of a temporary object.
-        -- (This is a limitation we hope to address in a future API update!)
-        
-        -- For now, let's just log it. A future API will make this easier.
         log("Teleporting to " .. savedX .. ", " .. savedY .. ", " .. savedZ)
         
-        -- When a Vector3 constructor is exposed to Lua, the code would look like this:
-        -- local targetPos = Vector3.new(savedX, savedY, savedZ)
-        -- game.SetPlayerPosition(targetPos)
+        local targetPos = Vector3(savedX, savedY, savedZ)
+        game.SetPlayerPosition(targetPos) -- this will not work since we can not get the player as of now!
     end
 end
 
 -- Make sure to call our setup function!
 OnScriptLoad()
-
-```
+``` 
 
 ## License
-
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the LICENSE file for details.
