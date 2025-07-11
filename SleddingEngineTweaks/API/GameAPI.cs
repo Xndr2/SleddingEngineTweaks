@@ -83,7 +83,7 @@ namespace SleddingEngineTweaks.API
         {
             // Placeholder for SleddingAPI integration
             Log($"Registered selector '{selectorText}' in tab '{tabName}' for mod '{modName}'");
-            // Example of how someon might call the Lua function:
+            // Example of how someone might call the Lua function:
             // _plugin.LuaManager.CallLuaFunction(callback, newValue);
             return true;
         }
