@@ -171,26 +171,37 @@ namespace SleddingEngineTweaks.API
         /// </summary>
         public GameObject FindGameObject(string name)
         {
-            if (_gameObjectCache.TryGetValue(name, out var cachedObj) && cachedObj != null)
+            // check if the cached object still exists
+            // since it can be destroyed while playing
+            if (_gameObjectCache.TryGetValue(name, out var cahcedObj))
             {
-                return cachedObj;
+                if (cahcedObj != null)
+                {
+                    return cahcedObj;
+                }
+                else
+                {
+                    _gameObjectCache.Remove(name);
+                }
             }
-            
-            GameObject foundObj = GameObject.Find(name);
-            if (foundObj != null)
+
+            GameObject obj = GameObject.Find(name);
+            if (obj != null)
             {
-                _gameObjectCache[name] = foundObj;
+                _gameObjectCache[name] = obj;
             }
-            return foundObj;
+            return obj;
         }
         
         public Vector3 GetObjectPosition(GameObject obj)
         {
+            if (obj == null) return Vector3.zero;
             return obj.transform.position;
         }
 
         public void SetObjectPosition(GameObject obj, Vector3 position)
         {
+            if (obj == null) return;
             obj.transform.position = position;
         }
 
