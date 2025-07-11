@@ -4,6 +4,16 @@ using UnityEngine;
 
 namespace SleddingEngineTweaks.API
 {
+    public enum SleddingAPIStatus
+    {
+        Ok,
+        UnknownError,
+        ModPanelNotFound,
+        ModPanelAlreadyRegistered,
+        ModTabNotFound,
+        ModTabAlreadyRegistered,
+    }
+    
     public static class SleddingAPI
     {
         private static Dictionary<string, ModPanel> modPanels = new();
@@ -84,15 +94,5 @@ namespace SleddingEngineTweaks.API
         {
             return modPanels;
         }
-    }
-
-    public enum SleddingAPIStatus
-    {
-        Ok,
-        UnknownError,
-        ModPanelNotFound,
-        ModPanelAlreadyRegistered,
-        ModTabNotFound,
-        ModTabAlreadyRegistered,
     }
 }

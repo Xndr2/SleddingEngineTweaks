@@ -43,83 +43,51 @@ namespace SleddingEngineTweaks.Scripting
 
         private void InitializeLua()
         {
-            // Register the assembly containing all Unity types
-            UserData.RegisterAssembly();
-            
-            UserData.RegisterType<Vector3>();
-            
             _luaScript = new Script();
             
-            // Register Unity types
-            // Transform and GameObject stuff
-            UserData.RegisterType<GameObject>();
-            UserData.RegisterType<Transform>();
-            UserData.RegisterType<Component>();
-            UserData.RegisterType<MonoBehaviour>();
+            // register core types and create a standard environment for Lua scripts
+            SetupStandardLuaEnvironment();
+        }
 
+        /// <summary>
+        /// Registers essential Unity and custom types with the Lua env
+        /// </summary>
+        private void SetupStandardLuaEnvironment()
+        {
+            // registers all public types in the Unity assemblies
+            // it makes most of the Unity API available
+            UserData.RegisterAssembly();
 
-            // Vector types
-            UserData.RegisterType<Vector2>();
-            UserData.RegisterType<Vector4>();
-            UserData.RegisterType<Quaternion>();
-            
-            // Physics
-            UserData.RegisterType<Rigidbody>();
-            UserData.RegisterType<Collider>();
-            UserData.RegisterType<Physics>();
-            
-            // Rendering
-            UserData.RegisterType<Camera>();
-            UserData.RegisterType<Material>();
-            UserData.RegisterType<MeshRenderer>();
-            UserData.RegisterType<Renderer>();
-            
-            // Scene management
-            UserData.RegisterType<SceneManager>();
-            UserData.RegisterType<Scene>();
-            
-            // UI
-            UserData.RegisterType<Canvas>();
-            UserData.RegisterType<RectTransform>();
-            
-            // utils
-            UserData.RegisterType<Time>();
-            UserData.RegisterType<Mathf>();
-            UserData.RegisterType<Debug>();
-            UserData.RegisterType<Color>();
-            
-            // custom
+            // Note: After calling RegisterAssembly, explicitly registering types like
+            // GameObject, Transform, Vector3, etc., is redundant. MoonSharp handles this
+            // We only need to keep custom type registrations
             UserData.RegisterType<GameAPI>();
             UserData.RegisterType<SleddingAPIStatus>();
             UserData.RegisterType<OptionType>();
-            
-            // initialize standard lua env
+
+            // Expose static utility classes to Lua
             _luaScript.Globals["debug"] = new Action<string>(Debug.Log);
             _luaScript.Globals["Time"] = UserData.CreateStatic<Time>();
             _luaScript.Globals["Mathf"] = UserData.CreateStatic<Mathf>();
-            _luaScript.Globals["Vector3"] = new Func<float, float, float, Vector3>((x, y, z) => new Vector3(x, y, z));
             _luaScript.Globals["Color"] = UserData.CreateStatic<Color>();
-
             
-            _luaScript.Globals["Vector3_zero"] = Vector3.zero;
-            _luaScript.Globals["Vector3_one"] = Vector3.one;
-            _luaScript.Globals["Vector3_up"] = Vector3.up;
-            _luaScript.Globals["Vector3_down"] = Vector3.down;
-            _luaScript.Globals["Vector3_left"] = Vector3.left;
-            _luaScript.Globals["Vector3_right"] = Vector3.right;
-            _luaScript.Globals["Vector3_forward"] = Vector3.forward;
-            _luaScript.Globals["Vector3_back"] = Vector3.back;
-
+            // Provide a constructor for Vector3. Lua scripts can use it like:
+            // local myVector = Vector3(1, 2, 3)
+            // Note: Static properties of Vector3 (e.g., Vector3.zero) are automatically
+            // exposed to Lua scripts
+            _luaScript.Globals["Vector3"] = new Func<float, float, float, Vector3>((x, y, z) => new Vector3(x, y, z));
+            
+            // Define basic global functions
             _luaScript.Globals["log"] = new Action<DynValue>((message) =>
             {
                 OutputMessage(message.ToString());
             });
-
+            
             _luaScript.Globals["help"] = new Action(() =>
             {
                 OutputMessage("Available commands:");
                 OutputMessage("help() - Shows this help message");
-                OutputMessage("log(message) - Logs a message");
+                OutputMessage("log(message) - Logs a message to the console");
                 // TODO: add more
             });
         }
@@ -195,13 +163,31 @@ namespace SleddingEngineTweaks.Scripting
             }
         }
         
+        // TODO: Fix this
+        // typing help does not work!
+        // Error: unexpected symbol near '<eof>'
         public DynValue ExecuteCommand(string command)
         {
             try
             {
+                // we first try to interpret the command as a function call if it matches a global function.
+                // this allows users to type 'help' instead of 'help()'
+                string trimmedCommand = command.Trim();
+                DynValue potentialFunc = _luaScript.Globals.Get(trimmedCommand);
+
+                if (potentialFunc != null && potentialFunc.Type == DataType.Function)
+                {
+                    // it's a function. Let's call it and return
+                    _luaScript.Call(potentialFunc);
+                    return DynValue.Nil; // we've handled it
+                }
+
+                // if it's not a simple function name, execute it as a script
+                // this will handle 'help()', 'a = 5', '2+2', etc
                 DynValue result = _luaScript.DoString(command);
-                // Output the result if it's not nil and not from a print statement
-                if (result != null && !result.IsNil() && !command.Trim().StartsWith("print"))
+
+                // output the result if it's not nil and not from a print statement
+                if (result != null && !result.IsNil() && !trimmedCommand.StartsWith("print"))
                 {
                     OutputMessage($"=> {result}");
                 }
@@ -209,12 +195,10 @@ namespace SleddingEngineTweaks.Scripting
             }
             catch (Exception e)
             {
-                OutputMessage($"Error: {e.Message}");
+                OutputMessage($"Error: {e.Message} | {command}");
                 return DynValue.Nil;
             }
-
         }
-
         
         public void OutputMessage(string message)
         {
