@@ -23,7 +23,7 @@ namespace SleddingEngineTweaks.API
 
         /// <summary>
         /// Clean up the event subs when the API is no longer needed
-        /// <summary>
+        /// </summary>
         public void Dispose()
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
