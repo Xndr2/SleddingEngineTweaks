@@ -202,25 +202,61 @@ namespace SleddingEngineTweaks.API
         
         #endregion
         
+<<<<<<< Updated upstream
         #region GameObject Methods
 
         [MoonSharpVisible(true)]
         public GameObject FindGameObject(string name)
         {
             return GameObject.Find(name);
+=======
+        #region GameObject API
+        public GameObject FindGameObject(string name)
+        {
+            // check if the cached object still exists
+            // since it can be destroyed while playing
+            if (_gameObjectCache.TryGetValue(name, out var cahcedObj))
+            {
+                if (cahcedObj != null)
+                {
+                    return cahcedObj;
+                }
+                else
+                {
+                    _gameObjectCache.Remove(name);
+                }
+            }
+            
+            GameObject obj = GameObject.Find(name);
+            if (obj != null)
+            {
+                _gameObjectCache[name] = obj;
+            }
+            return obj;
+>>>>>>> Stashed changes
         }
         
         [MoonSharpVisible(true)]
         public Vector3 GetObjectPosition(GameObject obj)
         {
+<<<<<<< Updated upstream
             return obj != null ? obj.transform.position : Vector3.zero;
+=======
+            if (obj == null) return Vector3.zero;
+            return obj.transform.position;
+>>>>>>> Stashed changes
         }
 
         [MoonSharpVisible(true)]
         public void SetObjectPosition(GameObject obj, Vector3 position)
         {
+<<<<<<< Updated upstream
             if (obj != null)
                 obj.transform.position = position;
+=======
+            if (obj == null) return;
+            obj.transform.position = position;
+>>>>>>> Stashed changes
         }
         
         #endregion
