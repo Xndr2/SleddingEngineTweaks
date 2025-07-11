@@ -175,9 +175,9 @@ namespace SleddingEngineTweaks.API
             // since it can be destroyed while playing
             if (_gameObjectCache.TryGetValue(name, out var cachedObj))
             {
-                if (cahcedObj != null)
+                if (cachedObj != null)
                 {
-                    return cahcedObj;
+                    return cachedObj;
                 }
                 else
                 {
