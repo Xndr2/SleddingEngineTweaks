@@ -173,7 +173,7 @@ namespace SleddingEngineTweaks.API
         {
             // check if the cached object still exists
             // since it can be destroyed while playing
-            if (_gameObjectCache.TryGetValue(name, out var cahcedObj))
+            if (_gameObjectCache.TryGetValue(name, out var cachedObj))
             {
                 if (cahcedObj != null)
                 {
