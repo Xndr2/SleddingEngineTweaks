@@ -1,106 +1,126 @@
-﻿using BepInEx;
-using MoonSharp.Interpreter;
-using System;
-using System.Collections.Generic;
-using SleddingEngineTweaks.UI;
+﻿using MoonSharp.Interpreter;
+using MoonSharp.Interpreter.Interop;
 using UnityEngine;
+using SleddingEngineTweaks.UI;
+using SleddingEngineTweaks.UI.Options.Base;
+using System;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 namespace SleddingEngineTweaks.API
 {
-    public class GameAPI : IDisposable
+    [MoonSharpUserData]
+    public class GameAPI
     {
         private readonly Plugin _plugin;
-        private readonly Dictionary<string, GameObject> _gameObjectCache = new Dictionary<string, GameObject>();
 
         public GameAPI(Plugin plugin)
         {
             _plugin = plugin;
-            // sub to scene changes to clear the cache
-            SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
-        /// <summary>
-        /// Clean up the event subs when the API is no longer needed
-        /// <summary>
-        public void Dispose()
-        {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
-        }
-
-        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-        {
-            // clear the cache to avoid holding refs to a destroyed object
-            _gameObjectCache.Clear();
-            Plugin.StaticLogger.LogInfo("Game object cache cleared due to scene change.");
-        }
-
+        [MoonSharpVisible(true)]
         public void Log(string message)
         {
-            _plugin.LuaManager.OutputMessage($"[LUA]: {message}");
+            Plugin.StaticLogger.LogInfo($"[Lua] {message}");
         }
-
+        
+        #region UI Methods
+        
+        [MoonSharpVisible(true)]
         public bool RegisterModPanel(string modName)
         {
-            // Placeholder for SleddingAPI integration
-            Log($"Registered mod panel: {modName}");
-            return true;
+            return SleddingAPI.RegisterModPanel(modName) == SleddingAPIStatus.Ok;
         }
-
-        #region Mod Panel API
+        
+        [MoonSharpVisible(true)]
         public bool RegisterModTab(string modName, string tabName)
         {
-            // Placeholder for SleddingAPI integration
-            Log($"Registered tab '{tabName}' for mod '{modName}'");
-            return true;
+            return SleddingAPI.RegisterModTab(modName, tabName) == SleddingAPIStatus.Ok;
         }
-
+        
+        [MoonSharpVisible(true)]
         public bool RegisterLabelOption(string modName, string tabName, string optionName)
         {
-            // Placeholder for SleddingAPI integration
-            Log($"Registered label '{optionName}' in tab '{tabName}' for mod '{modName}'");
-            return true;
+            return SleddingAPI.RegisterOption(modName, tabName, optionName, OptionType.Label) == SleddingAPIStatus.Ok;
         }
-
+        
+        [MoonSharpVisible(true)]
         public bool UpdateLabelOption(string modName, string tabName, string newText)
         {
-            // Placeholder for SleddingAPI integration
-            Log($"Updating label in tab '{tabName}' for mod '{modName}' to '{newText}'");
-            return true;
+            return SleddingAPI.UpdateOption(modName, tabName, newText, OptionType.Label) == SleddingAPIStatus.Ok;
         }
 
+        [MoonSharpVisible(true)]
         public bool RegisterButtonOption(string modName, string tabName, string buttonText, DynValue callback)
         {
-            // Placeholder for SleddingAPI integration
-            Log($"Registered button '{buttonText}' in tab '{tabName}' for mod '{modName}'");
-            // Example of how someone might call the Lua function:
-            // _plugin.LuaManager.CallLuaFunction(callback);
-            return true;
-        }
+            if (callback == null || callback.Type != DataType.Function)
+            {
+                Log("RegisterButtonOption requires a valid function callback.");
+                return false;
+            }
+            
+            var button = new ModOption_Button(buttonText);
+            button.Clicked += () =>
+            {
+                try
+                {
+                    callback.Function.Call();
+                }
+                catch (ScriptRuntimeException ex)
+                {
+                    Log($"Error in button callback: {ex.DecoratedMessage}");
+                }
 
+            };
+            
+            return SleddingAPI.RegisterOption(modName, tabName, button) == SleddingAPIStatus.Ok;
+        }
+        
+        [MoonSharpVisible(true)]
         public bool RegisterSelectorOption(string modName, string tabName, string selectorText, bool defaultValue, DynValue callback)
         {
-            // Placeholder for SleddingAPI integration
-            Log($"Registered selector '{selectorText}' in tab '{tabName}' for mod '{modName}'");
-            // Example of how someon might call the Lua function:
-            // _plugin.LuaManager.CallLuaFunction(callback, newValue);
-            return true;
-        }
-        #endregion
+            if (callback == null || callback.Type != DataType.Function)
+            {
+                Log("RegisterSelectorOption requires a valid function callback.");
+                return false;
+            }
 
-        #region Player API
+            var selector = new ModOption_Selector(selectorText, defaultValue);
+            selector.ValueChanged += (newValue) =>
+            {
+                try
+                {
+                    callback.Function.Call(newValue);
+                }
+                catch (ScriptRuntimeException ex)
+                {
+                    Log($"Error in selector callback: {ex.DecoratedMessage}");
+                }
+
+            };
+
+            return SleddingAPI.RegisterOption(modName, tabName, selector) == SleddingAPIStatus.Ok;
+        }
+        
+        #endregion
+        
+        #region Player Methods
+
+        [MoonSharpVisible(true)]
         public GameObject GetPlayer()
         {
+            // Assuming the player GameObject is tagged with "Player"
             return GameObject.FindGameObjectWithTag("Player");
         }
 
+        [MoonSharpVisible(true)]
         public Vector3 GetPlayerPosition()
         {
             var player = GetPlayer();
             return player != null ? player.transform.position : Vector3.zero;
         }
 
+        [MoonSharpVisible(true)]
         public void SetPlayerPosition(Vector3 position)
         {
             var player = GetPlayer();
@@ -108,99 +128,114 @@ namespace SleddingEngineTweaks.API
             {
                 player.transform.position = position;
             }
-
         }
+
         #endregion
-        
-        #region Input API
+
+        #region Input Methods
+
+        [MoonSharpVisible(true)]
         public bool WasKeyPressedThisFrame(string keyName)
         {
-            if (Enum.TryParse<Key>(keyName, true, out var key))
+            if (Keyboard.current != null && Enum.TryParse<Key>(keyName, true, out var key))
             {
-                return Keyboard.current != null && Keyboard.current[key].wasPressedThisFrame;
+                return Keyboard.current[key].wasPressedThisFrame;
             }
             return false;
         }
+        
+        [MoonSharpVisible(true)]
         public bool IsKeyDown(string keyName)
         {
-            if (Enum.TryParse<Key>(keyName, true, out var key))
+            if (Keyboard.current != null && Enum.TryParse<Key>(keyName, true, out var key))
             {
-                return Keyboard.current != null && Keyboard.current[key].isPressed;
+                return Keyboard.current[key].isPressed;
             }
             return false;
         }
 
-
         #endregion
 
-        #region Config
+        #region Configuration Methods
+
+        [MoonSharpVisible(true)]
         public string GetConfigValue(string section, string key, string defaultValue)
         {
-            return _plugin.Config.Bind(section, key, defaultValue).Value;
+            var configEntry = _plugin.Config.Bind(section, key, defaultValue);
+            return configEntry.Value;
         }
 
+        [MoonSharpVisible(true)]
         public void SetConfigValue(string section, string key, string value)
         {
-            _plugin.Config.Bind(section, key, value).Value = value;
+            var configEntry = _plugin.Config.Bind(section, key, "");
+            configEntry.Value = value;
             _plugin.Config.Save();
         }
-        
+
         #endregion
+        
+        #region Game State Methods
 
-        #region Utils
-
+        [MoonSharpVisible(true)]
         public bool IsGamePaused()
         {
-            return Time.timeScale == 0f;
+            return Time.timeScale == 0;
         }
         
+        [MoonSharpVisible(true)]
         public void SetTimeScale(float scale)
         {
-            Time.timeScale = scale;
+            Time.timeScale = Mathf.Clamp(scale, 0f, 10f);
         }
+        
+        #endregion
+        
+        #region Scene Management Methods
 
+        [MoonSharpVisible(true)]
         public string GetCurrentSceneName()
         {
-            return SceneManager.GetActiveScene().name;
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            return scene.IsValid() ? scene.name : "Unknown";
         }
+        
         #endregion
         
-        #region GameObject API
-        /// <summary>
-        /// Find a GameObject by name, using a cache for performance
-        /// </summary>
+        #region GameObject Methods
+
+        [MoonSharpVisible(true)]
         public GameObject FindGameObject(string name)
         {
-            if (_gameObjectCache.TryGetValue(name, out var cachedObj) && cachedObj != null)
-            {
-                return cachedObj;
-            }
-            
-            GameObject foundObj = GameObject.Find(name);
-            if (foundObj != null)
-            {
-                _gameObjectCache[name] = foundObj;
-            }
-            return foundObj;
+            return GameObject.Find(name);
         }
         
+        [MoonSharpVisible(true)]
         public Vector3 GetObjectPosition(GameObject obj)
         {
-            return obj.transform.position;
+            return obj != null ? obj.transform.position : Vector3.zero;
         }
 
+        [MoonSharpVisible(true)]
         public void SetObjectPosition(GameObject obj, Vector3 position)
         {
-            obj.transform.position = position;
+            if (obj != null)
+                obj.transform.position = position;
         }
+        
+        #endregion
+        
+        #region Debug Methods
 
+        [MoonSharpVisible(true)]
         public void DrawDebugLine(Vector3 start, Vector3 end, float duration = 1.0f)
         {
-            Debug.DrawLine(start, end, Color.white, duration);
+            Debug.DrawLine(start, end, Color.yellow, duration);
         }
 
-
         #endregion
+
+        // TODO:
+        // Add more methods here that need to be exposed to Lua scripts
     }
-    
 }
