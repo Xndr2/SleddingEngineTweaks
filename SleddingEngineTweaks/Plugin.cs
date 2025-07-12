@@ -19,7 +19,8 @@ namespace SleddingEngineTweaks
         internal static ManualLogSource StaticLogger;
         private static ImGuiController _controller;
         public LuaManager LuaManager { get; private set; }
-        public GameAPI _gameAPI;
+        internal static GameAPI GameAPI;
+        internal static SleddingAPI SleddingAPI;
     
         // config
         public static ConfigEntry<Key> MasterKey;
@@ -65,13 +66,16 @@ namespace SleddingEngineTweaks
         private void RegisterGameAPI()
         {
             // Create an API object that exposes safe game functionality to Lua
-            _gameAPI = new GameAPI(this);
-            LuaManager.RegisterGlobal("game", _gameAPI);
+            GameAPI = new GameAPI(this);
+            SleddingAPI = new SleddingAPI(this);
+            LuaManager.RegisterGlobal("game", GameAPI);
+            LuaManager.RegisterGlobal("set", SleddingAPI);
         }
 
         private void OnDestroy()
         {
-            _gameAPI?.Dispose();
+            GameAPI?.Dispose();
+            SleddingAPI?.Dispose();
         }
         
         public static void SavePanelPosition(string panelName, Rect position)

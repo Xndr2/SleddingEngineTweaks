@@ -63,7 +63,7 @@ namespace SleddingEngineTweaks
                 fontSize = 14
             };
 
-            foreach (var panel in SleddingAPI.GetAllModPanels().Values)
+            foreach (var panel in Plugin.SleddingAPI.GetAllModPanels().Values)
             {
                 panel.Render(panelStyle);
             }

@@ -22,20 +22,20 @@ namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
             var showOnStartOption = new ModOption_Selector("Show this UI on startup", Plugin.ShowOnStart.Value);
             showOnStartOption.ValueChanged += (value) => Plugin.ShowOnStart.Value = value;
             
-            SleddingAPI.RegisterModPanel(modName);
-
-            SleddingAPI.RegisterModTab(modName, "Options");
-            SleddingAPI.RegisterOption(modName, "Options", $"SET Version: {MyPluginInfo.PLUGIN_VERSION}", OptionType.Label);
-            SleddingAPI.RegisterOption(modName, "Options", $"Sledding Game Version: {Application.version}", OptionType.Label);
-            SleddingAPI.RegisterOption(modName, "Options", showOnStartOption);
+            Plugin.SleddingAPI.RegisterModPanel(modName);
             
-            SleddingAPI.RegisterModTab(modName, "Keybinds");
-            SleddingAPI.RegisterOption(modName, "Keybinds", masterKey);
+            Plugin.SleddingAPI.RegisterModTab(modName, "Options");
+            Plugin.SleddingAPI.RegisterLabelOption(modName, "Options", $"SET Version: {MyPluginInfo.PLUGIN_VERSION}");
+            Plugin.SleddingAPI.RegisterLabelOption(modName, "Options", $"Sledding Game Version: {Application.version}");
+            Plugin.SleddingAPI.RegisterOption(modName, "Options", showOnStartOption);
+            
+            Plugin.SleddingAPI.RegisterModTab(modName, "Keybinds");
+            Plugin.SleddingAPI.RegisterOption(modName, "Keybinds", masterKey);
             
             //SleddingAPI.RegisterModTab(modName, "Console");
-            SleddingAPI.RegisterModTab(modName, consoleTab);
-            SleddingAPI.RegisterModTab(modName, "Debug");
-            SleddingAPI.RegisterModTab(modName, "Extra");
+            Plugin.SleddingAPI.RegisterModTab(modName, consoleTab);
+            Plugin.SleddingAPI.RegisterModTab(modName, "Debug");
+            Plugin.SleddingAPI.RegisterModTab(modName, "Extra");
         }
     }
 }

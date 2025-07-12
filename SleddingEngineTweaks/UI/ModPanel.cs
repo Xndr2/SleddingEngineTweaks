@@ -89,13 +89,13 @@ namespace SleddingEngineTweaks.UI
             return SleddingAPIStatus.ModTabNotFound;
         }
         
-        public SleddingAPIStatus UpdateOption(string tabName, string newText, OptionType optionType)
+        public SleddingAPIStatus UpdateOption(string tabName,string oldText, string newText, OptionType optionType)
         {
             foreach (ModTab tab in tabs)
             {
                 if (tab.GetName() == tabName)
                 {
-                    tab.UpdateOption(newText, optionType);
+                    tab.UpdateOption(oldText, newText, optionType);
                     return SleddingAPIStatus.Ok;
                 }
             }
