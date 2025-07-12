@@ -38,56 +38,8 @@ namespace SleddingEngineTweaks.API
 
         public void Log(string message)
         {
-            _plugin.LuaManager.OutputMessage($"[LUA]: {message}");
+            _plugin.LuaManager.OutputMessage($"[GameAPI]: {message}");
         }
-
-        public bool RegisterModPanel(string modName)
-        {
-            // Placeholder for SleddingAPI integration
-            Log($"Registered mod panel: {modName}");
-            return true;
-        }
-
-        #region Mod Panel API
-        public bool RegisterModTab(string modName, string tabName)
-        {
-            // Placeholder for SleddingAPI integration
-            Log($"Registered tab '{tabName}' for mod '{modName}'");
-            return true;
-        }
-
-        public bool RegisterLabelOption(string modName, string tabName, string optionName)
-        {
-            // Placeholder for SleddingAPI integration
-            Log($"Registered label '{optionName}' in tab '{tabName}' for mod '{modName}'");
-            return true;
-        }
-
-        public bool UpdateLabelOption(string modName, string tabName, string newText)
-        {
-            // Placeholder for SleddingAPI integration
-            Log($"Updating label in tab '{tabName}' for mod '{modName}' to '{newText}'");
-            return true;
-        }
-
-        public bool RegisterButtonOption(string modName, string tabName, string buttonText, DynValue callback)
-        {
-            // Placeholder for SleddingAPI integration
-            Log($"Registered button '{buttonText}' in tab '{tabName}' for mod '{modName}'");
-            // Example of how someone might call the Lua function:
-            // _plugin.LuaManager.CallLuaFunction(callback);
-            return true;
-        }
-
-        public bool RegisterSelectorOption(string modName, string tabName, string selectorText, bool defaultValue, DynValue callback)
-        {
-            // Placeholder for SleddingAPI integration
-            Log($"Registered selector '{selectorText}' in tab '{tabName}' for mod '{modName}'");
-            // Example of how someone might call the Lua function:
-            // _plugin.LuaManager.CallLuaFunction(callback, newValue);
-            return true;
-        }
-        #endregion
 
         #region Player API
         public GameObject GetPlayer()

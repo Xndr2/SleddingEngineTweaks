@@ -62,6 +62,7 @@ namespace SleddingEngineTweaks.Scripting
             // GameObject, Transform, Vector3, etc., is redundant. MoonSharp handles this
             // We only need to keep custom type registrations
             UserData.RegisterType<GameAPI>();
+            UserData.RegisterType<SleddingAPI>();
             UserData.RegisterType<SleddingAPIStatus>();
             UserData.RegisterType<OptionType>();
 

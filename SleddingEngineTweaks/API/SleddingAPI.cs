@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using MoonSharp.Interpreter;
 using SleddingEngineTweaks.UI;
+using SleddingEngineTweaks.UI.Options.Base;
 using UnityEngine;
 
 namespace SleddingEngineTweaks.API
@@ -14,15 +17,25 @@ namespace SleddingEngineTweaks.API
         ModTabAlreadyRegistered,
     }
     
-    public static class SleddingAPI
+    public class SleddingAPI : IDisposable
     {
+        private readonly Plugin _plugin;
         private static Dictionary<string, ModPanel> modPanels = new();
         private static float nextPanelX = 20f;
         private const float PANEL_SPACING = 20f;
 
-        public static SleddingAPIStatus RegisterModPanel(string modName)
+        public SleddingAPI(Plugin plugin)
         {
-           
+            _plugin = plugin;
+        }
+
+        public void Dispose()
+        {
+            // we do nothing at the moment
+        }
+        
+        public SleddingAPIStatus RegisterModPanel(string modName)
+        {
             if (GetModPanel(modName) != null) return SleddingAPIStatus.ModPanelAlreadyRegistered;
             
             // Load saved position and size or use defaults
@@ -45,7 +58,7 @@ namespace SleddingEngineTweaks.API
             return SleddingAPIStatus.Ok;
         }
 
-        public static SleddingAPIStatus RegisterModTab(string modName, string tabName)
+        public SleddingAPIStatus RegisterModTab(string modName, string tabName)
         {
             ModPanel panel = GetModPanel(modName);
             if (panel == null) return SleddingAPIStatus.ModPanelNotFound;
@@ -53,7 +66,7 @@ namespace SleddingEngineTweaks.API
             return SleddingAPIStatus.Ok;
         }
 
-        public static SleddingAPIStatus RegisterModTab(string modName, ModTab tab)
+        public SleddingAPIStatus RegisterModTab(string modName, ModTab tab)
         {
             ModPanel panel = GetModPanel(modName);
             if (panel == null) return SleddingAPIStatus.ModPanelNotFound;
@@ -61,36 +74,65 @@ namespace SleddingEngineTweaks.API
             return SleddingAPIStatus.Ok;
         }
         
-        public static SleddingAPIStatus RegisterOption(string modName, string tabName, string optionName, OptionType optionType)
+        private SleddingAPIStatus RegisterOption(string modName, string tabName, string optionName, OptionType optionType)
         {
             ModPanel panel = GetModPanel(modName);
             if (panel == null) return SleddingAPIStatus.ModPanelNotFound;
             return panel.AddOption(tabName, optionName, optionType);
         }
 
-        public static SleddingAPIStatus RegisterOption(string modName, string tabName, ModOption option)
+        public SleddingAPIStatus RegisterOption(string modName, string tabName, ModOption option)
         {
             ModPanel panel = GetModPanel(modName);
             if (panel == null) return SleddingAPIStatus.ModPanelNotFound;
             return panel.AddOption(tabName, option);
         }
+
+        public SleddingAPIStatus RegisterLabelOption(string modName, string tabName, string labelName)
+        {
+            return RegisterOption(modName, tabName, labelName, OptionType.Label);
+        }
+
+        public SleddingAPIStatus RegisterButtonOption(string modName, string tabName, string buttonName, DynValue callback)
+        {
+            if (callback == null && callback.Type != DataType.Function)
+            {
+                Plugin.GameAPI.Log($"{buttonName} (RegisterButtonOption) requires a valid function callback.");
+                return SleddingAPIStatus.UnknownError;
+            }
+            ModOption_Button button = new ModOption_Button(buttonName);
+            button.Clicked += () =>
+            {
+                try
+                {
+                    callback.Function.Call();
+                }
+                catch (ScriptRuntimeException e)
+                {
+                    Plugin.GameAPI.Log($"Error executing callback for {buttonName}: {e.DecoratedMessage}");
+                }
+            };
+            return RegisterOption(modName, tabName, button);
+        }
         
-        public static SleddingAPIStatus UpdateOption(string modName, string tabName, string newText, OptionType optionType)
+        // TODO: add RegisterSelectorOption method
+        
+        public SleddingAPIStatus UpdateOption(string modName, string tabName, string oldText, string newText, OptionType optionType)
         {
             if (!modPanels.ContainsKey(modName))
                 return SleddingAPIStatus.ModPanelNotFound;
 
             var panel = modPanels[modName];
-            return panel.UpdateOption(tabName, newText, optionType);
+            return panel.UpdateOption(tabName, oldText, newText, optionType);
         }
 
-        public static ModPanel GetModPanel(string modName)
+        public ModPanel GetModPanel(string modName)
         {
             if (modPanels.ContainsKey(modName)) return modPanels[modName];
             return null;
         }
 
-        public static Dictionary<string, ModPanel> GetAllModPanels()
+        public Dictionary<string, ModPanel> GetAllModPanels()
         {
             return modPanels;
         }
