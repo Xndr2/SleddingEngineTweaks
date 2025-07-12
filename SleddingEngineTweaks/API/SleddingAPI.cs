@@ -95,7 +95,7 @@ namespace SleddingEngineTweaks.API
 
         public SleddingAPIStatus RegisterButtonOption(string modName, string tabName, string buttonName, DynValue callback)
         {
-            if (callback == null && callback.Type != DataType.Function)
+            if (callback == null || callback.Type != DataType.Function)
             {
                 Plugin.GameAPI.Log($"{buttonName} (RegisterButtonOption) requires a valid function callback.");
                 return SleddingAPIStatus.UnknownError;

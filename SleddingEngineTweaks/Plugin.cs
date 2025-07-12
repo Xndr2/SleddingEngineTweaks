@@ -75,6 +75,7 @@ namespace SleddingEngineTweaks
         private void OnDestroy()
         {
             GameAPI?.Dispose();
+            SleddingAPI?.Dispose();
         }
         
         public static void SavePanelPosition(string panelName, Rect position)
