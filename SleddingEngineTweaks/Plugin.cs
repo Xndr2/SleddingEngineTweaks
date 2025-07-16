@@ -53,7 +53,11 @@ namespace SleddingEngineTweaks
             RegisterGameAPI();
         
             // set up UI
+            string AssetBundlesPath = Path.Combine(Paths.PluginPath, "SleddingEngineTweaks", "set_prefab");
             _controller = new();
+            AssetBundle bundle = AssetBundle.LoadFromFile(AssetBundlesPath);
+            GameObject obj = bundle.LoadAsset<GameObject>("Yes");
+            _controller.prefab = obj;
             _controller.Setup();
             SETMain main = new SETMain();
         
