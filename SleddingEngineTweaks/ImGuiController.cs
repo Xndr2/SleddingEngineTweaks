@@ -12,9 +12,23 @@ namespace SleddingEngineTweaks
         internal static ImGuiController Instance { get; private set; }
         
         private bool showUI = Plugin.ShowOnStart.Value;
+
+        public GameObject prefab; // we set this at runtime
         
         internal void Setup()
         {
+            if (prefab != null)
+            {
+                
+                GameObject prefabObj = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity);
+                DontDestroyOnLoad(prefabObj);
+                prefabObj.hideFlags = HideFlags.HideAndDontSave;
+            }
+            else
+            {
+                Plugin.StaticLogger.LogError("ImGuiController prefab not set!");
+            }
+            
             GameObject obj = new GameObject("ImGuiController");
             DontDestroyOnLoad(obj);
             obj.hideFlags = HideFlags.HideAndDontSave;
