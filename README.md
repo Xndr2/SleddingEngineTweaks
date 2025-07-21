@@ -12,12 +12,21 @@ Create new UI, manipulate game objects, listen for keyboard input, change game s
 
 ## Features
 - 🟩**Lua Scripting:** Use the MoonSharp Lua interpreter to run your mods.
-- 🟥**Live Script Loading:** Drop `.lua` files into the scripts folder, and they are loaded automatically. No restart required!
 - 🟩**Dynamic In-Game UI:** Create your own mod panels with tabs, buttons, labels, and toggles directly from Lua. All UI elements can have their own scriptable callbacks.
-- 🟧**Dual API System:** Two distinct APIs are exposed to Lua scripts - `game` for game interactions and `set` for UI management.
 - 🟩**Persistent Configuration:** Scripts can save and load their own settings, which persist between game sessions.
-- 🟧**Built-in Event System:** Hook into core game events like `OnUpdate` and `OnSceneLoaded` to trigger your script's logic.
 - 🟩**Advanced GameObject Management:** Find, manipulate, and interact with game objects with built-in caching for performance.
+
+## Planned
+- 🟧**Built-in Event System:** Hook into core game events like `OnUpdate` and `OnSceneLoaded` to trigger your script's logic.
+- 🟧**Dual API System:** Two distinct APIs are exposed to Lua scripts - `game` for game interactions and `set` for UI management.
+- 🟥**Vr support:** Support for VR.
+- 🟥**Live Script Loading:** Drop `.lua` files into the scripts folder, and they are loaded automatically. No restart required!
+- 🟥**Drag and drop file importer:** Drag and drop files.
+- 🟥**Custom clothes, hats, sleds:**
+- 🟥**Custom frog color:**
+- 🟥**Custom maps:**
+- 🟥**Dedicated server utils**
+- 🟥**Admin tools**
 
 ## For Players: Installation
 1. Make sure you have [BepInEx](https://github.com/BepInEx/BepInEx) installed for your game.
