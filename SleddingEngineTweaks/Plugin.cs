@@ -16,9 +16,11 @@ namespace SleddingEngineTweaks
     [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
     {
+        public static Plugin Instance { get; private set; }
         internal static ManualLogSource StaticLogger;
         private static ImGuiController _controller;
         public LuaManager LuaManager { get; private set; }
+        private static LuaEventHandler _luaEventHandler { get; set; }
         internal static GameAPI GameAPI;
         internal static SleddingAPI SleddingAPI;
     
@@ -29,6 +31,7 @@ namespace SleddingEngineTweaks
 
         private void Awake()
         {
+            Instance = this;
             // keybind setup
             MasterKey = Config.Bind("Keybinds", "MasterKey", Key.Delete, "Key to toggle the UI");
             ShowOnStart = Config.Bind("Options", "ShowOnStart", false, "Show On Start");
@@ -63,11 +66,14 @@ namespace SleddingEngineTweaks
         
             // load all lua scripts in the scripts folder
             LuaManager.LoadAllScripts();
+            // set up all events so lua scripts can access them
+            _luaEventHandler = new();
+            _luaEventHandler.Setup();
         
             StaticLogger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} loaded!");
         }
     
-        private void RegisterGameAPI()
+        public void RegisterGameAPI()
         {
             // Create an API object that exposes safe game functionality to Lua
             GameAPI = new GameAPI(this);

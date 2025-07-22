@@ -36,6 +36,7 @@ namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
             Plugin.SleddingAPI.RegisterModTab(modName, consoleTab);
             Plugin.SleddingAPI.RegisterModTab(modName, "Debug");
             Plugin.SleddingAPI.RegisterModTab(modName, "Extra");
+            Plugin.SleddingAPI.RegisterOption(modName, "Extra", new BtnReloadScripts());
         }
     }
 }

@@ -66,6 +66,12 @@ namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
             if (string.IsNullOrEmpty(command)) return;
 
             AppendToHistory($"> {command}");
+            if (command.Trim().ToLower() == "reloadscripts")
+            {
+                LuaManager.Instance.ReloadAllScripts();
+                AppendToHistory("[Console] Reloaded all Lua scripts.");
+                return;
+            }
             luaManager.ExecuteCommand(command);
         }
 

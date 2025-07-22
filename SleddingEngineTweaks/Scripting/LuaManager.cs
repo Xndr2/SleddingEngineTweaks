@@ -6,6 +6,7 @@ using BepInEx;
 using SleddingEngineTweaks.API;
 using SleddingEngineTweaks.UI;
 using UnityEngine.SceneManagement;
+using System.Threading;
 
 namespace SleddingEngineTweaks.Scripting
 {
@@ -26,6 +27,8 @@ namespace SleddingEngineTweaks.Scripting
         private Script _luaScript;
         private string _scriptPath;
         public event Action<string> OnScriptOutput;
+        private FileSystemWatcher _scriptWatcher;
+        private SynchronizationContext _mainThreadContext;
 
         public LuaManager()
         {
@@ -39,6 +42,8 @@ namespace SleddingEngineTweaks.Scripting
             }
             
             InitializeLua();
+            _mainThreadContext = SynchronizationContext.Current;
+            SetupFileWatcher();
         }
 
         private void InitializeLua()
@@ -207,5 +212,51 @@ namespace SleddingEngineTweaks.Scripting
             Plugin.StaticLogger.LogInfo(message);
         }
 
+        private void SetupFileWatcher()
+        {
+            _scriptWatcher = new FileSystemWatcher(_scriptPath, "*.lua");
+            _scriptWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.CreationTime;
+            _scriptWatcher.Changed += OnScriptFolderChanged;
+            _scriptWatcher.Created += OnScriptFolderChanged;
+            _scriptWatcher.Deleted += OnScriptFolderChanged;
+            _scriptWatcher.Renamed += OnScriptFolderChanged;
+            _scriptWatcher.EnableRaisingEvents = true;
+        }
+
+        private void OnScriptFolderChanged(object sender, FileSystemEventArgs e)
+        {
+            // Ensure reload happens on main thread
+            if (_mainThreadContext != null)
+            {
+                _mainThreadContext.Post(_ => ReloadAllScripts(), null);
+            }
+            else
+            {
+                ReloadAllScripts();
+            }
+        }
+
+        public void ReloadAllScripts()
+        {
+            OutputMessage("Reloading all Lua scripts...");
+            // Unload all panels/tabs/options
+            SleddingEngineTweaks.API.SleddingAPI sleddingAPI = Plugin.SleddingAPI;
+            if (sleddingAPI != null)
+            {
+                sleddingAPI.RemoveAllModPanels();
+            }
+            // Dispose old APIs
+            if (Plugin.GameAPI != null) Plugin.GameAPI.Dispose();
+            if (Plugin.SleddingAPI != null) Plugin.SleddingAPI.Dispose();
+            // Re-initialize Lua environment (removes all globals, events, etc)
+            InitializeLua();
+            // Re-register APIs using the same logic as Plugin.Awake()
+            Plugin.Instance.RegisterGameAPI();
+            // Reload all scripts
+            LoadAllScripts();
+            // Re-create the main panel and tabs
+            new SleddingEngineTweaks.UI.SleddingEngineTweaksPanel.SETMain();
+            OutputMessage("Lua scripts reloaded.");
+        }
     }
 }

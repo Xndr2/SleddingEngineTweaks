@@ -18,7 +18,6 @@ namespace SleddingEngineTweaks.Scripting
         
         void Start()
         {
-            Plugin.StaticLogger.LogInfo($"SceneEventHandler start");
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
