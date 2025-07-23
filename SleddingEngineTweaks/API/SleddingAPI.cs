@@ -136,5 +136,11 @@ namespace SleddingEngineTweaks.API
         {
             return modPanels;
         }
+
+        public void RemoveAllModPanels()
+        {
+            modPanels.Clear();
+            nextPanelX = 20f;
+        }
     }
 }
