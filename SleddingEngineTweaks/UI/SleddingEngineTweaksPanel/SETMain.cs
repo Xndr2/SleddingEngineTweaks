@@ -19,24 +19,30 @@ namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
         {
             BtnMasterKey masterKey = new BtnMasterKey();
             ConsoleTab consoleTab = new ConsoleTab();
-            var showOnStartOption = new ModOption_Selector("Show this UI on startup", Plugin.ShowOnStart.Value);
+            HierarchyTab hierarchyTab = new HierarchyTab();
+            var showOnStartOption = new ModOption_Selector("show_on_start_selector", "Show this UI on startup");
             showOnStartOption.ValueChanged += (value) => Plugin.ShowOnStart.Value = value;
             
             Plugin.SleddingAPI.RegisterModPanel(modName);
             
             Plugin.SleddingAPI.RegisterModTab(modName, "Options");
-            Plugin.SleddingAPI.RegisterLabelOption(modName, "Options", $"SET Version: {MyPluginInfo.PLUGIN_VERSION}");
-            Plugin.SleddingAPI.RegisterLabelOption(modName, "Options", $"Sledding Game Version: {Application.version}");
+            Plugin.SleddingAPI.RegisterLabelOption(modName, "Options", "set_version_label", $"SET Version: {MyPluginInfo.PLUGIN_VERSION}");
+            Plugin.SleddingAPI.RegisterLabelOption(modName, "Options", "game_version_label", $"Sledding Game Version: {Application.version}");
             Plugin.SleddingAPI.RegisterOption(modName, "Options", showOnStartOption);
             
             Plugin.SleddingAPI.RegisterModTab(modName, "Keybinds");
             Plugin.SleddingAPI.RegisterOption(modName, "Keybinds", masterKey);
             
-            //SleddingAPI.RegisterModTab(modName, "Console");
             Plugin.SleddingAPI.RegisterModTab(modName, consoleTab);
+            Plugin.SleddingAPI.RegisterModTab(modName, hierarchyTab);
             Plugin.SleddingAPI.RegisterModTab(modName, "Debug");
             Plugin.SleddingAPI.RegisterModTab(modName, "Extra");
-            Plugin.SleddingAPI.RegisterOption(modName, "Extra", new BtnReloadScripts());
+            Plugin.SleddingAPI.RegisterOption(modName, "Extra", new BtnReloadScripts("reload_scripts_btn"));
+
+            // Debug info: scene, player path, position
+            Plugin.SleddingAPI.RegisterLabelOption(modName, "Debug", "dbg_scene_label", "Scene: ");
+            Plugin.SleddingAPI.RegisterLabelOption(modName, "Debug", "dbg_player_path_label", "Player Path: ");
+            Plugin.SleddingAPI.RegisterLabelOption(modName, "Debug", "dbg_player_pos_label", "Player Pos: ");
         }
     }
 }
