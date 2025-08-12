@@ -82,5 +82,14 @@ namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
             scrollPosition.y = float.MaxValue; // Auto-scroll to bottom
         }
 
+        ~ConsoleTab()
+        {
+            // Safety: make sure we do not leak subscriptions on reload/dispose
+            if (luaManager != null)
+            {
+                luaManager.OnScriptOutput -= AppendToHistory;
+            }
+        }
+
     }
 }
