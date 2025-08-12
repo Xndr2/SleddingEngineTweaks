@@ -2,6 +2,7 @@
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using SleddingEngineTweaks.API;
+using SleddingEngineTweaks.UI.Options.Base;
 
 namespace SleddingEngineTweaks.UI
 {
@@ -63,13 +64,39 @@ namespace SleddingEngineTweaks.UI
             return SleddingAPIStatus.Ok;
         }
 
-        public SleddingAPIStatus AddOption(string tabName, string optionName, OptionType optionType)
+        public bool RemoveTab(string tabName)
+        {
+            for (int i = 0; i < tabs.Count; i++)
+            {
+                if (tabs[i].GetName() == tabName)
+                {
+                    tabs.RemoveAt(i);
+                    if (currentTab >= tabs.Count)
+                    {
+                        currentTab = Mathf.Max(0, tabs.Count - 1);
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public ModTab GetTab(string tabName)
+        {
+            foreach (var tab in tabs)
+            {
+                if (tab.GetName() == tabName) return tab;
+            }
+            return null;
+        }
+
+        public SleddingAPIStatus AddOption(string tabName, string optionId, string name, OptionType optionType)
         {
             foreach (ModTab tab in tabs)
             {
                 if (tab.GetName() == tabName)
                 {
-                    tab.AddOption(optionName, optionType);
+                    tab.AddOption(optionId, name, optionType);
                     return SleddingAPIStatus.Ok;
                 }
             }
@@ -89,13 +116,13 @@ namespace SleddingEngineTweaks.UI
             return SleddingAPIStatus.ModTabNotFound;
         }
         
-        public SleddingAPIStatus UpdateOption(string tabName,string oldText, string newText, OptionType optionType)
+        public SleddingAPIStatus UpdateOption(string tabName, UpdateOptionRequest request)
         {
             foreach (ModTab tab in tabs)
             {
                 if (tab.GetName() == tabName)
                 {
-                    tab.UpdateOption(oldText, newText, optionType);
+                    tab.UpdateOption(request);
                     return SleddingAPIStatus.Ok;
                 }
             }

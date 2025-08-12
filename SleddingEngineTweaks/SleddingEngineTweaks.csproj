@@ -70,6 +70,15 @@
 
         <!-- Copy all DLLs from build output to plugin lib folder -->
         <Copy SourceFiles="$(OutputPath)\SleddingEngineTweaks.dll" DestinationFolder="$(PluginLibDir)" />
+
+    <!-- Copy Lua scripts to plugin Scripts folder -->
+    <ItemGroup>
+      <LuaScripts Include="Scripts\**\*.lua" />
+    </ItemGroup>
+    <MakeDir Directories="$(PluginLibDir)\Scripts" />
+    <Copy SourceFiles="@(LuaScripts)" DestinationFolder="$(PluginLibDir)\Scripts">
+      <Output TaskParameter="CopiedFiles" ItemName="CopiedLua" />
+    </Copy>
     </Target>
 
 </Project>

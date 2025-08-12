@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using BepInEx.Configuration;
 using SleddingEngineTweaks.API;
+using System;
 
 namespace SleddingEngineTweaks
 {
@@ -17,16 +18,22 @@ namespace SleddingEngineTweaks
         
         internal void Setup()
         {
-            if (prefab != null)
+            try
             {
-                
-                GameObject prefabObj = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity);
-                DontDestroyOnLoad(prefabObj);
-                prefabObj.hideFlags = HideFlags.HideAndDontSave;
+                if (prefab != null)
+                {
+                    GameObject prefabObj = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity);
+                    DontDestroyOnLoad(prefabObj);
+                    prefabObj.hideFlags = HideFlags.HideAndDontSave;
+                }
+                else
+                {
+                    Plugin.StaticLogger.LogError("ImGuiController prefab not set!");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Plugin.StaticLogger.LogError("ImGuiController prefab not set!");
+                Plugin.StaticLogger.LogError($"Failed to initialize ImGuiController prefab: {ex.Message}");
             }
             
             GameObject obj = new GameObject("ImGuiController");

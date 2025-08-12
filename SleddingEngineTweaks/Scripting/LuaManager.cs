@@ -50,8 +50,10 @@ namespace SleddingEngineTweaks.Scripting
 
         private void InitializeLua()
         {
-            _luaScript = new Script();
-            
+            // Create a hard sandboxed Lua VM: disables IO/OS/DLL access
+            // Only explicitly whitelisted CLR types/methods will be available
+            _luaScript = new Script(CoreModules.Preset_HardSandbox | CoreModules.TableIterators | CoreModules.Basic);
+
             // register core types and create a standard environment for Lua scripts
             SetupStandardLuaEnvironment();
         }
@@ -61,20 +63,18 @@ namespace SleddingEngineTweaks.Scripting
         /// </summary>
         private void SetupStandardLuaEnvironment()
         {
-            // registers all public types in the Unity assemblies
-            // it makes most of the Unity API available
-            UserData.RegisterAssembly();
-
-            // Note: After calling RegisterAssembly, explicitly registering types like
-            // GameObject, Transform, Vector3, etc., is redundant. MoonSharp handles this
-            // We only need to keep custom type registrations
+            // SECURITY: Whitelist only the types we want to expose to Lua
+            // Do NOT broadly register assemblies.
             UserData.RegisterType<GameAPI>();
             UserData.RegisterType<SleddingAPI>();
             UserData.RegisterType<SleddingAPIStatus>();
             UserData.RegisterType<OptionType>();
+            UserData.RegisterType<Vector3>();
+            UserData.RegisterType<Color>();
+            UserData.RegisterType<SafeGameObject>();
+            UserData.RegisterType<RaycastResult>();
 
-            // Expose static utility classes to Lua
-            _luaScript.Globals["debug"] = new Action<string>(Debug.Log);
+            // Expose safe static utility classes/values to Lua (no IO/OS)
             _luaScript.Globals["Time"] = UserData.CreateStatic<Time>();
             _luaScript.Globals["Mathf"] = UserData.CreateStatic<Mathf>();
             _luaScript.Globals["Color"] = UserData.CreateStatic<Color>();
@@ -111,6 +111,11 @@ namespace SleddingEngineTweaks.Scripting
                 Plugin.StaticLogger.LogError($"Lua Runtime Error: {e.Message}");
                 return DynValue.Nil;
             }
+            catch (Exception e)
+            {
+                Plugin.StaticLogger.LogError($"Lua Error: {e.Message}");
+                return DynValue.Nil;
+            }
         }
 
         public DynValue ExecuteFile(string fileName)
@@ -144,11 +149,14 @@ namespace SleddingEngineTweaks.Scripting
             try
             {
                 string[] scriptFiles = Directory.GetFiles(_scriptPath, "*.lua");
+                int loaded = 0;
                 foreach (string scriptFile in scriptFiles)
                 {
                     Plugin.StaticLogger.LogInfo($"Loading Lua script: {Path.GetFileName(scriptFile)}");
                     ExecuteFile(Path.GetFileName(scriptFile));
+                    loaded++;
                 }
+                OutputMessage($"Loaded {loaded} Lua script(s) from '{_scriptPath}'.");
             }
             catch (Exception e)
             {
@@ -181,6 +189,10 @@ namespace SleddingEngineTweaks.Scripting
                 // we first try to interpret the command as a function call if it matches a global function.
                 // this allows users to type 'help' instead of 'help()'
                 string trimmedCommand = command.Trim();
+                if (string.IsNullOrWhiteSpace(trimmedCommand))
+                {
+                    return DynValue.Nil;
+                }
                 DynValue potentialFunc = _luaScript.Globals.Get(trimmedCommand);
 
                 if (potentialFunc != null && potentialFunc.Type == DataType.Function)
@@ -252,8 +264,14 @@ namespace SleddingEngineTweaks.Scripting
             }
         }
 
+        private DateTime _lastChangeEvent = DateTime.MinValue;
         private void OnScriptFolderChanged(object sender, FileSystemEventArgs e)
         {
+            // Debounce rapid file system events
+            var now = DateTime.UtcNow;
+            if ((now - _lastChangeEvent).TotalMilliseconds < 250) return;
+            _lastChangeEvent = now;
+
             // Ensure reload happens on main thread
             if (_mainThreadContext != null)
             {
@@ -277,6 +295,9 @@ namespace SleddingEngineTweaks.Scripting
             {
                 _isReloading = true;
                 OutputMessage("Reloading all Lua scripts...");
+
+                // Prevent event subscriber leaks from UI tabs like ConsoleTab
+                OnScriptOutput = null;
                 // Unload all panels/tabs/options
                 SleddingEngineTweaks.API.SleddingAPI sleddingAPI = Plugin.SleddingAPI;
                 if (sleddingAPI != null)

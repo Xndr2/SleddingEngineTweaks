@@ -8,7 +8,7 @@ namespace SleddingEngineTweaks.UI
     public class ModTab
     {
         private string _name;
-        private List<ModOption> options = new();
+        private Dictionary<string, ModOption> options = new();
 
         public ModTab(string name)
         {
@@ -20,47 +20,63 @@ namespace SleddingEngineTweaks.UI
             return _name;
         }
         
-        public void AddOption(string name, OptionType optionType)
+        public void AddOption(string optionId, string name, OptionType optionType)
         {
             ModOption option;
             switch (optionType)
             {
                 default:
-                    option = new ModOption_Label(name);
-                    break;
                 case OptionType.Label:
-                    option = new ModOption_Label(name);
+                    option = new ModOption_Label(optionId, name);
                     break;
                 case OptionType.Selector:
-                    option = new ModOption_Selector(name);
+                    option = new ModOption_Selector(optionId, name);
                     break;
                 case OptionType.Button:
-                    option = new ModOption_Button(name);
+                    option = new ModOption_Button(optionId, name);
                     break;
             }
-            options.Add(option);
+            options[optionId] = option;
         }
 
         public void AddOption(ModOption option)
         {
-            options.Add(option);
+            options[option.GetOptionId()] = option;
         }
         
-        public void UpdateOption(string oldText, string newText, OptionType optionType)
+        public void UpdateOption(UpdateOptionRequest request)
         {
-            foreach (var option in options)
+            if (options.TryGetValue(request.OptionId, out var option))
             {
-                if (option.GetName() == oldText && option.GetOptionType() == optionType)
+                if (!string.IsNullOrEmpty(request.NewName))
                 {
-                    option.SetName(newText);
-                    break;
+                    option.SetName(request.NewName);
                 }
+                if (request.Visible.HasValue)
+                {
+                    option.SetVisible(request.Visible.Value);
+                }
+                if (request.Enabled.HasValue)
+                {
+                    option.SetEnabled(request.Enabled.Value);
+                }
+                // TODO: handle more fields from request
             }
+        }
+
+        public bool RemoveOption(string optionId)
+        {
+            return options.Remove(optionId);
+        }
+
+        public bool HasOption(string optionId)
+        {
+            return options.ContainsKey(optionId);
         }
 
         public virtual void Render()
         {
-            foreach (var option in options)
+            foreach (var option in options.Values)
             {
                 option.Render();
             }

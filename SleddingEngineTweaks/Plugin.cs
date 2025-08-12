@@ -58,9 +58,30 @@ namespace SleddingEngineTweaks
             // set up UI
             string AssetBundlesPath = Path.Combine(Paths.PluginPath, "SleddingEngineTweaks", "set_prefab");
             _controller = new();
-            AssetBundle bundle = AssetBundle.LoadFromFile(AssetBundlesPath);
-            GameObject obj = bundle.LoadAsset<GameObject>("Yes");
-            _controller.prefab = obj;
+            try
+            {
+                AssetBundle bundle = AssetBundle.LoadFromFile(AssetBundlesPath);
+                if (bundle == null)
+                {
+                    StaticLogger.LogError($"Failed to load AssetBundle at {AssetBundlesPath}");
+                }
+                else
+                {
+                    GameObject obj = bundle.LoadAsset<GameObject>("Yes");
+                    if (obj == null)
+                    {
+                        StaticLogger.LogError("Failed to load prefab 'Yes' from AssetBundle.");
+                    }
+                    else
+                    {
+                        _controller.prefab = obj;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StaticLogger.LogError($"Exception while loading AssetBundle/prefab: {ex.Message}");
+            }
             _controller.Setup();
             SETMain main = new SETMain();
         

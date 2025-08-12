@@ -11,10 +11,10 @@ Welcome to Sledding Engine Tweaks (SET), a powerful modding framework for Unity 
 Create new UI, manipulate game objects, listen for keyboard input, change game settings, and much more, all from simple `.lua` script files.
 
 ## Features
-- 🟩**Lua Scripting:** Use the MoonSharp Lua interpreter to run your mods.
-- 🟩**Dynamic In-Game UI:** Create your own mod panels with tabs, buttons, labels, and toggles directly from Lua. All UI elements can have their own scriptable callbacks.
-- 🟩**Persistent Configuration:** Scripts can save and load their own settings, which persist between game sessions.
-- 🟩**Advanced GameObject Management:** Find, manipulate, and interact with game objects with built-in caching for performance.
+- 🟩**Lua Scripting (Hardened Sandbox):** MoonSharp in HardSandbox mode with strict type whitelisting. No file/OS access from Lua.
+- 🟩**Dynamic In-Game UI:** Create panels, tabs, labels, buttons, and selectors directly from Lua, with callbacks.
+- 🟩**Persistent Configuration:** Save and load script settings between sessions.
+- 🟩**Game API Helpers:** Player movement/teleport, camera access, scene/time utilities, raycasts, safe GameObject wrappers, noclip toggle.
 
 ## Planned
 - 🟧**Built-in Event System:** Hook into core game events like `OnUpdate` and `OnSceneLoaded` to trigger your script's logic.
@@ -90,9 +90,13 @@ The `game` API provides access to game-specific functionality like player contro
 
 | Function Signature | Description |
 | --- | --- |
-| `game.GetPlayer()` | Returns the player GameObject (or null if not found). |
+| `game.GetPlayer()` | Returns a SafeGameObject wrapper for the player (or nil). |
 | `game.GetPlayerPosition()` | Returns the player's current `Vector3` position. |
 | `game.SetPlayerPosition(pos)` | Teleports the player to the given `Vector3` position `pos`. |
+| `game.SetNoClip(enabled)` | Enables or disables noclip (disables colliders/gravity). |
+| `game.MovePlayer(delta)` | Moves player by a world-space delta `Vector3`. |
+| `game.MovePlayerForward(distance)` | Moves player forward by distance. |
+| `game.MovePlayerAlong(direction, distance)` | Moves player along direction by distance. |
 
 #### **Input Handling**
 
@@ -118,15 +122,21 @@ Save and load settings for your mod. All settings are stored in BepInEx's standa
 | `game.IsGamePaused()` | Returns `true` if the game is currently paused (timeScale = 0). |
 | `game.SetTimeScale(scale)` | Sets the game's time scale (0 = paused, 1 = normal, 2 = double speed, etc.). |
 | `game.GetCurrentSceneName()` | Returns the name of the currently loaded scene. |
+| `game.LoadSceneByName(name)` | Loads a scene by name. |
+| `game.GetDeltaTime()` | Returns `Time.deltaTime`. |
+| `game.GetTimeScale()` | Returns `Time.timeScale`. |
 
 #### **GameObject Management**
 Advanced game object manipulation with built-in caching for performance.
 
 | Function Signature | Description |
 | --- | --- |
-| `game.FindGameObject(name)` | Finds a GameObject by name, using a cache for performance. Returns the GameObject or null. |
-| `game.GetObjectPosition(obj)` | Returns the `Vector3` position of the specified GameObject. |
-| `game.SetObjectPosition(obj, position)` | Sets the position of the specified GameObject to the given `Vector3`. |
+| `game.FindGameObject(name)` | Finds an object by name and returns a SafeGameObject or nil. |
+| `game.GetObjectPosition(obj)` | Returns the `Vector3` position of a SafeGameObject. |
+| `game.SetObjectPosition(obj, position)` | Sets position of a SafeGameObject. |
+| `game.CreateEmpty(name, position)` | Creates an empty GameObject and returns a SafeGameObject. |
+| `game.DestroyObject(obj)` | Destroys a SafeGameObject. |
+| `game.RaycastFromCamera(maxDistance)` | Returns a table { Hit, Point, Normal, HitObject }.
 
 ### The `set` API: UI Management
 The `set` API is dedicated to creating and managing custom UI panels, tabs, and controls within the main SET interface.
@@ -150,15 +160,19 @@ The `set` API is dedicated to creating and managing custom UI panels, tabs, and 
 
 | Function Signature | Description | Return Value |
 | --- | --- | --- |
-| `set.RegisterLabelOption(modName, tabName, labelName)` | Adds a simple text label to a tab. | `SleddingAPIStatus.Ok` on success, error status on failure |
-| `set.RegisterButtonOption(modName, tabName, buttonName, callback)` | Adds a clickable button. The `callback` is a Lua function that runs when the button is pressed. | `SleddingAPIStatus.Ok` on success, error status on failure |
-| `set.RegisterOption(modName, tabName, modOption)` | Adds a custom ModOption object to a tab. | `SleddingAPIStatus.Ok` on success, error status on failure |
+| `set.RegisterLabelOption(modName, tabName, optionId, labelName)` | Adds a text label with ID. | `SleddingAPIStatus.Ok` |
+| `set.RegisterButtonOption(modName, tabName, optionId, buttonName, callback)` | Adds a button with Lua callback. | `SleddingAPIStatus.Ok` |
+| `set.RegisterSelectorOption(modName, tabName, optionId, optionName, onChangedFn)` | Adds a toggle selector with optional callback. | `SleddingAPIStatus.Ok` |
+| `set.RegisterOption(modName, tabName, modOption)` | Adds a custom ModOption object to a tab. | `SleddingAPIStatus.Ok` |
 
 #### **UI Updates**
 
 | Function Signature | Description | Return Value |
 | --- | --- | --- |
-| `set.UpdateOption(modName, tabName, oldText, newText, optionType)` | Updates an existing option's text. | `SleddingAPIStatus.Ok` on success, error status on failure |
+| `set.UpdateOption(modName, tabName, request)` | Update option display/state. Supports fields: `OptionId`, `NewName`, `Visible`, `Enabled`. | `SleddingAPIStatus.Ok` |
+| `set.RemoveOption(modName, tabName, optionId)` | Remove an option by ID. | `SleddingAPIStatus.Ok` |
+| `set.RemoveModTab(modName, tabName)` | Remove a tab by name. | `SleddingAPIStatus.Ok` |
+| `set.RemoveModPanel(modName)` | Remove an entire panel. | `bool` |
 
 ### API Status Codes
 The `set` API returns status codes to indicate success or failure:

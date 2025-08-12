@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using SleddingEngineTweaks.UI;
 
 namespace SleddingEngineTweaks.UI.Options.Base
 {
@@ -10,13 +11,14 @@ namespace SleddingEngineTweaks.UI.Options.Base
         
         public event Action Clicked;
         
-        public ModOption_Button(string name, string labelName = "") : base(name, OptionType.Button)
+        public ModOption_Button(string optionId, string name, string labelName = "") : base(optionId, name, OptionType.Button)
         {
             _labelName = labelName;
         }
 
         public override void Render()
         {
+            if (!IsVisible()) return;
             bool hasLabel = !string.IsNullOrEmpty(_labelName);
             if (hasLabel)
             {
@@ -24,9 +26,12 @@ namespace SleddingEngineTweaks.UI.Options.Base
                 GUILayout.Label(_labelName);
             }
 
-            if (GUILayout.Button(GetName()))
+            using (new GUIEnabledScope(IsEnabled()))
             {
-                OnClicked();
+                if (GUILayout.Button(GetName()))
+                {
+                    OnClicked();
+                }
             }
 
             if (hasLabel)
@@ -41,6 +46,7 @@ namespace SleddingEngineTweaks.UI.Options.Base
             {
                 IsPressed = true;
             }
+            SleddingEngineTweaks.Plugin.StaticLogger?.LogInfo($"[UI] Button clicked: id={GetOptionId()}, name={GetName()}");
             Clicked?.Invoke();
         }
     }
