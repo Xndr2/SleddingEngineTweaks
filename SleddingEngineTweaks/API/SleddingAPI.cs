@@ -120,9 +120,13 @@ namespace SleddingEngineTweaks.API
                 {
                     Plugin.GameAPI.Log($"Error executing callback for {buttonName}: {e.DecoratedMessage}");
                 }
-                catch (System.Exception ex)
+                catch (InvalidOperationException ex)
                 {
-                    Plugin.GameAPI.Log($"Error executing callback for {buttonName}: {ex.Message}");
+                    Plugin.GameAPI.Log($"Invalid operation in callback for {buttonName}: {ex.Message}");
+                }
+                catch (ArgumentException ex)
+                {
+                    Plugin.GameAPI.Log($"Argument error in callback for {buttonName}: {ex.Message}");
                 }
             };
             return RegisterOption(modName, tabName, button);
