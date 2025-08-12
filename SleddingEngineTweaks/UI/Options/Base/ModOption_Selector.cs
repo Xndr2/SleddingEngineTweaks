@@ -8,15 +8,16 @@ namespace SleddingEngineTweaks.UI.Options.Base
         private bool _enabled;
         public event Action<bool> ValueChanged;
 
-        public ModOption_Selector(string name, bool enabled = false) : base(name, OptionType.Selector)
-        {
-            _enabled = enabled;
-        }
+        public ModOption_Selector(string optionId, string name) : base(optionId, name, OptionType.Selector) {}
         
         public override void Render()
         {
+            if (!IsVisible()) return;
             bool previous = _enabled;
-            _enabled = GUILayout.Toggle(_enabled, GetName());
+            using (new GUIEnabledScope(IsEnabled()))
+            {
+                _enabled = GUILayout.Toggle(_enabled, GetName());
+            }
 
             if (_enabled != previous)
             {
@@ -30,6 +31,6 @@ namespace SleddingEngineTweaks.UI.Options.Base
             // For subclasses to override if needed
         }
 
-        public bool IsEnabled() => _enabled;
+        public bool GetValue() => _enabled;
     }
 }
