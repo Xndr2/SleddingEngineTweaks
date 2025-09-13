@@ -1,6 +1,6 @@
 # Sledding Engine Tweaks
 
-A powerful modding framework for Unity games that enables rapid development of custom mods through Lua scripting.
+A modding framework for Sledding Game. It's designed to make creating mods super easy using Lua scripting.
 
 ## ⚠️ Development Status
 
@@ -9,7 +9,7 @@ A powerful modding framework for Unity games that enables rapid development of c
 ## 🚀 Quick Start
 
 ### Installation
-1. Install [BepInEx](https://github.com/BepInEx/BepInEx) for your game
+1. Install [BepInEx](https://github.com/BepInEx/BepInEx) in the Lethal Company folder (or wait until Sledding Game releases)
 2. Download `SleddingEngineTweaks.dll` from [releases](../../releases)
 3. Place the DLL in `BepInEx/plugins/`
 4. Run the game once to generate the mod folder
