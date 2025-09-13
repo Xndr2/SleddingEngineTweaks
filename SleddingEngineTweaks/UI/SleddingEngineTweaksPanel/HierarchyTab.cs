@@ -5,7 +5,7 @@ using SleddingEngineTweaks.API;
 
 namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
 {
-    public class HierarchyTab : ModTab
+    public class HierarchyTab : ModTab, IDynamicSizedTab
     {
         private readonly Dictionary<int, bool> _expandedById = new Dictionary<int, bool>();
         private Vector2 _scroll;
@@ -14,6 +14,15 @@ namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
         private GameObject _selected;
 
         public HierarchyTab() : base("Hierarchy") { }
+        
+        /// <summary>
+        /// Gets the requested size for this tab based on current content
+        /// </summary>
+        public Vector2? GetRequestedSize()
+        {
+            // Hierarchy tab needs more space for the tree view and inspector
+            return new Vector2(600f, 400f); // Minimum size for hierarchy
+        }
 
         public override void Render()
         {
@@ -155,6 +164,10 @@ namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
                 var cam = Camera.main;
                 if (cam != null)
                 {
+                    // Move camera to a position near the object and look at it
+                    Vector3 direction = (_selected.transform.position - cam.transform.position).normalized;
+                    Vector3 newPosition = _selected.transform.position - direction * 5f; // 5 units away
+                    cam.transform.position = newPosition;
                     cam.transform.LookAt(_selected.transform);
                 }
             }

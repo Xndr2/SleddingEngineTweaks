@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using SleddingEngineTweaks.API;
 using SleddingEngineTweaks.UI.Options.Base;
+using SleddingEngineTweaks.UI.SleddingEngineTweaksPanel;
 
 namespace SleddingEngineTweaks.UI
 {
@@ -14,6 +15,10 @@ namespace SleddingEngineTweaks.UI
         private List<ModTab> tabs = new();
         private int currentTab = 0;
         private Vector2 lastPosition;
+        
+        // Custom panel sizing
+        public Vector2? CustomMinSize { get; set; } = null;
+        public Vector2? CustomRecommendedSize { get; set; } = null;
 
         public const float MIN_WIDTH = 250f;
         public const float MIN_HEIGHT = 150f;
@@ -28,8 +33,9 @@ namespace SleddingEngineTweaks.UI
         public ModPanel(string name, Rect rect)
         {
             Name = name;
-            rect.width = Mathf.Max(rect.width, MIN_WIDTH);
-            rect.height = Mathf.Max(rect.height, MIN_HEIGHT);
+            var minSize = GetMinimumSize();
+            rect.width = Mathf.Max(rect.width, minSize.x);
+            rect.height = Mathf.Max(rect.height, minSize.y);
             WindowRect = rect;
             lastPosition = new Vector2(rect.x, rect.y);
             lastSize = new Vector2(rect.width, rect.height);
@@ -39,6 +45,107 @@ namespace SleddingEngineTweaks.UI
             resizeHandleStyle.normal.textColor = Color.white;
             resizeHandleStyle.alignment = TextAnchor.LowerRight;
             resizeHandleStyle.fontSize = 12;
+        }
+        
+        /// <summary>
+        /// Creates a ModPanel with custom minimum and recommended sizes
+        /// </summary>
+        /// <param name="name">Panel name</param>
+        /// <param name="rect">Initial position and size</param>
+        /// <param name="customMinSize">Custom minimum size (optional)</param>
+        /// <param name="customRecommendedSize">Custom recommended size (optional)</param>
+        public ModPanel(string name, Rect rect, Vector2? customMinSize = null, Vector2? customRecommendedSize = null)
+        {
+            Name = name;
+            CustomMinSize = customMinSize;
+            CustomRecommendedSize = customRecommendedSize;
+            
+            var minSize = GetMinimumSize();
+            rect.width = Mathf.Max(rect.width, minSize.x);
+            rect.height = Mathf.Max(rect.height, minSize.y);
+            WindowRect = rect;
+            lastPosition = new Vector2(rect.x, rect.y);
+            lastSize = new Vector2(rect.width, rect.height);
+            
+            // Create resize handle style
+            resizeHandleStyle = new GUIStyle();
+            resizeHandleStyle.normal.textColor = Color.white;
+            resizeHandleStyle.alignment = TextAnchor.LowerRight;
+            resizeHandleStyle.fontSize = 12;
+        }
+        
+        /// <summary>
+        /// Gets the minimum size for this panel
+        /// </summary>
+        private Vector2 GetMinimumSize()
+        {
+            // Use custom minimum size if specified
+            if (CustomMinSize.HasValue)
+            {
+                return CustomMinSize.Value;
+            }
+            
+            // Default minimum size
+            return new Vector2(MIN_WIDTH, MIN_HEIGHT);
+        }
+        
+        /// <summary>
+        /// Gets the recommended size for this panel based on current content
+        /// </summary>
+        private Vector2 GetRecommendedSize()
+        {
+            var minSize = GetMinimumSize();
+            
+            // Use custom recommended size if specified
+            if (CustomRecommendedSize.HasValue)
+            {
+                return CustomRecommendedSize.Value;
+            }
+            
+            // Check if current tab has requested a specific size
+            if (currentTab >= 0 && currentTab < tabs.Count)
+            {
+                var currentTabObj = tabs[currentTab];
+                if (currentTabObj is IDynamicSizedTab dynamicTab)
+                {
+                    var requestedSize = dynamicTab.GetRequestedSize();
+                    if (requestedSize.HasValue)
+                    {
+                        // Use the requested size as the minimum for this tab
+                        return new Vector2(
+                            Mathf.Max(minSize.x, requestedSize.Value.x),
+                            Mathf.Max(minSize.y, requestedSize.Value.y)
+                        );
+                    }
+                }
+            }
+            
+            return minSize;
+        }
+        
+        /// <summary>
+        /// Requests the panel to resize based on current content
+        /// </summary>
+        public void RequestResize()
+        {
+            AutoResizeBasedOnContent();
+        }
+        
+        /// <summary>
+        /// Automatically resizes the panel based on current content
+        /// </summary>
+        private void AutoResizeBasedOnContent()
+        {
+            var recommendedSize = GetRecommendedSize();
+            var minSize = GetMinimumSize();
+            
+            // Only auto-resize if the current size is smaller than recommended
+            if (WindowRect.height < recommendedSize.y)
+            {
+                WindowRect.height = recommendedSize.y;
+                // Save the new size
+                Plugin.SavePanelPosition(Name, WindowRect);
+            }
         }
 
         public SleddingAPIStatus AddTab(string tabName)
@@ -134,8 +241,9 @@ namespace SleddingEngineTweaks.UI
             WindowRect = GUILayout.Window(Name.GetHashCode(), WindowRect, DrawWindow, "", style);
 
             // Enforce minimum size
-            WindowRect.width = Mathf.Max(WindowRect.width, MIN_WIDTH);
-            WindowRect.height = Mathf.Max(WindowRect.height, Collapsed ? HEADER_HEIGHT : MIN_HEIGHT);
+            var minSize = GetMinimumSize();
+            WindowRect.width = Mathf.Max(WindowRect.width, minSize.x);
+            WindowRect.height = Mathf.Max(WindowRect.height, Collapsed ? HEADER_HEIGHT : minSize.y);
 
             // Add position and size saving
             Vector2 currentPosition = new Vector2(WindowRect.x, WindowRect.y);
@@ -173,15 +281,23 @@ namespace SleddingEngineTweaks.UI
 
             GUILayout.Space(5);
 
-            // Tabs
-            if (tabs.Count > 0)
+            // Tabs (only show if more than 1 tab)
+            if (tabs.Count > 1)
             {
                 GUILayout.BeginHorizontal();
                 for (int i = 0; i < tabs.Count; i++)
                 {
                     if (GUILayout.Toggle(currentTab == i, tabs[i].GetName(), GUI.skin.button))
                     {
-                        currentTab = i;
+                        if (currentTab != i)
+                        {
+                            // Tab switched - reset height to minimum
+                            currentTab = i;
+                            var minSize = GetMinimumSize();
+                            WindowRect.height = minSize.y;
+                            // Save the new size immediately
+                            Plugin.SavePanelPosition(Name, WindowRect);
+                        }
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -192,6 +308,9 @@ namespace SleddingEngineTweaks.UI
             if (currentTab >= 0 && currentTab < tabs.Count)
             {
                 tabs[currentTab].Render();
+                
+                // Auto-resize based on content if needed
+                AutoResizeBasedOnContent();
             }
             
             // draw resize handle
@@ -225,8 +344,9 @@ namespace SleddingEngineTweaks.UI
                 case EventType.MouseDrag:
                     if (isResizing)
                     {
-                        WindowRect.width = Mathf.Max(MIN_WIDTH, mousePos.x + 5);
-                        WindowRect.height = Mathf.Max(MIN_HEIGHT, mousePos.y + 5);
+                        var minSize = GetMinimumSize();
+                        WindowRect.width = Mathf.Max(minSize.x, mousePos.x + 5);
+                        WindowRect.height = Mathf.Max(minSize.y, mousePos.y + 5);
                         e.Use();
 
                         // Save size if it has changed significantly

@@ -23,9 +23,11 @@ namespace SleddingEngineTweaks
         private static LuaEventHandler _luaEventHandler { get; set; }
         internal static GameAPI GameAPI;
         internal static SleddingAPI SleddingAPI;
+        internal static PrefabAPI PrefabAPI;
     
         // config
         public static ConfigEntry<Key> MasterKey;
+        public static ConfigEntry<Key> ToggleMouse;
         public static ConfigEntry<bool> ShowOnStart;
         private static ConfigFile PanelConfigFile;
 
@@ -34,6 +36,7 @@ namespace SleddingEngineTweaks
             Instance = this;
             // keybind setup
             MasterKey = Config.Bind("Keybinds", "MasterKey", Key.Delete, "Key to toggle the UI");
+            ToggleMouse = Config.Bind("Keybinds", "ToggleMouse", Key.LeftAlt, "Key to show the mouse");
             ShowOnStart = Config.Bind("Options", "ShowOnStart", false, "Show On Start");
             
             PanelConfigFile = new ConfigFile(Path.Combine(Paths.ConfigPath, "SleddingEngineTweaks.panels.cfg"), true);
@@ -45,47 +48,18 @@ namespace SleddingEngineTweaks
             // init lua manager
             LuaManager = LuaManager.Instance;
         
-            // register logger for lua scripts
-            LuaManager.RegisterGlobal("log", new Action<string>(message => 
-            {
-                LuaManager.OutputMessage(message);
-            }));
+            // Note: log function is already set up by LuaManager during initialization
 
         
-            // register any game APIs
+            // register any game APIs BEFORE loading scripts
             RegisterGameAPI();
         
             // set up UI
-            string AssetBundlesPath = Path.Combine(Paths.PluginPath, "SleddingEngineTweaks", "set_prefab");
             _controller = new();
-            try
-            {
-                AssetBundle bundle = AssetBundle.LoadFromFile(AssetBundlesPath);
-                if (bundle == null)
-                {
-                    StaticLogger.LogError($"Failed to load AssetBundle at {AssetBundlesPath}");
-                }
-                else
-                {
-                    GameObject obj = bundle.LoadAsset<GameObject>("Yes");
-                    if (obj == null)
-                    {
-                        StaticLogger.LogError("Failed to load prefab 'Yes' from AssetBundle.");
-                    }
-                    else
-                    {
-                        _controller.prefab = obj;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                StaticLogger.LogError($"Exception while loading AssetBundle/prefab: {ex.Message}");
-            }
             _controller.Setup();
             SETMain main = new SETMain();
         
-            // load all lua scripts in the scripts folder
+            // load all lua scripts in the scripts folder AFTER APIs are registered
             LuaManager.LoadAllScripts();
             // set up all events so lua scripts can access them
             _luaEventHandler = new();
@@ -99,14 +73,17 @@ namespace SleddingEngineTweaks
             // Create an API object that exposes safe game functionality to Lua
             GameAPI = new GameAPI(this);
             SleddingAPI = new SleddingAPI(this);
+            PrefabAPI = new PrefabAPI(this);
             LuaManager.RegisterGlobal("game", GameAPI);
             LuaManager.RegisterGlobal("set", SleddingAPI);
+            LuaManager.RegisterGlobal("prefab", PrefabAPI);
         }
 
         private void OnDestroy()
         {
             GameAPI?.Dispose();
             SleddingAPI?.Dispose();
+            PrefabAPI?.Dispose();
         }
         
         public static void SavePanelPosition(string panelName, Rect position)

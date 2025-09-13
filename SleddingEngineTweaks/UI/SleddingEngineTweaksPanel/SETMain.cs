@@ -17,12 +17,13 @@ namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
 
         public void Setup()
         {
-            BtnMasterKey masterKey = new BtnMasterKey();
             ConsoleTab consoleTab = new ConsoleTab();
             HierarchyTab hierarchyTab = new HierarchyTab();
+            PrefabTab prefabTab = new PrefabTab();
             var showOnStartOption = new ModOption_Selector("show_on_start_selector", "Show this UI on startup");
             showOnStartOption.ValueChanged += (value) => Plugin.ShowOnStart.Value = value;
             
+            // Main panel with default sizing
             Plugin.SleddingAPI.RegisterModPanel(modName);
             
             Plugin.SleddingAPI.RegisterModTab(modName, "Options");
@@ -31,10 +32,12 @@ namespace SleddingEngineTweaks.UI.SleddingEngineTweaksPanel
             Plugin.SleddingAPI.RegisterOption(modName, "Options", showOnStartOption);
             
             Plugin.SleddingAPI.RegisterModTab(modName, "Keybinds");
-            Plugin.SleddingAPI.RegisterOption(modName, "Keybinds", masterKey);
+            Plugin.SleddingAPI.RegisterOption(modName, "Keybinds", new KeybindRemapButton(Plugin.MasterKey, "Master Key"));
+            Plugin.SleddingAPI.RegisterOption(modName, "Keybinds", new KeybindRemapButton(Plugin.ToggleMouse, "Toggle Mouse"));
             
             Plugin.SleddingAPI.RegisterModTab(modName, consoleTab);
             Plugin.SleddingAPI.RegisterModTab(modName, hierarchyTab);
+            Plugin.SleddingAPI.RegisterModTab(modName, prefabTab);
             Plugin.SleddingAPI.RegisterModTab(modName, "Debug");
             Plugin.SleddingAPI.RegisterModTab(modName, "Extra");
             Plugin.SleddingAPI.RegisterOption(modName, "Extra", new BtnReloadScripts("reload_scripts_btn"));

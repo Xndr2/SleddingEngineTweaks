@@ -13,29 +13,9 @@ namespace SleddingEngineTweaks
         internal static ImGuiController Instance { get; private set; }
         
         private bool showUI = Plugin.ShowOnStart.Value;
-
-        public GameObject prefab; // we set this at runtime
         
         internal void Setup()
         {
-            try
-            {
-                if (prefab != null)
-                {
-                    GameObject prefabObj = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity);
-                    DontDestroyOnLoad(prefabObj);
-                    prefabObj.hideFlags = HideFlags.HideAndDontSave;
-                }
-                else
-                {
-                    Plugin.StaticLogger.LogError("ImGuiController prefab not set!");
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.StaticLogger.LogError($"Failed to initialize ImGuiController prefab: {ex.Message}");
-            }
-            
             GameObject obj = new GameObject("ImGuiController");
             DontDestroyOnLoad(obj);
             obj.hideFlags = HideFlags.HideAndDontSave;
@@ -61,6 +41,17 @@ namespace SleddingEngineTweaks
             if (Keyboard.current[Plugin.MasterKey.Value].wasReleasedThisFrame)
             {
                 IsDown = false;
+            }
+
+            if (Keyboard.current[Plugin.ToggleMouse.Value].wasPressedThisFrame)
+            {
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+            }
+            if (Keyboard.current[Plugin.ToggleMouse.Value].wasReleasedThisFrame)
+            {
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
             }
         }
 

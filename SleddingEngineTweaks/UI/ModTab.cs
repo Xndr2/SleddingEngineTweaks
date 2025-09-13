@@ -5,6 +5,18 @@ using UnityEngine;
 
 namespace SleddingEngineTweaks.UI
 {
+    /// <summary>
+    /// Interface for tabs that can request dynamic sizing based on their content
+    /// </summary>
+    public interface IDynamicSizedTab
+    {
+        /// <summary>
+        /// Gets the requested size for this tab based on current content
+        /// </summary>
+        /// <returns>Requested size, or null if no specific size is needed</returns>
+        Vector2? GetRequestedSize();
+    }
+
     public class ModTab
     {
         private string _name;

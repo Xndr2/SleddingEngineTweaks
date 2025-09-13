@@ -7,6 +7,7 @@ using SleddingEngineTweaks.API;
 using SleddingEngineTweaks.UI;
 using UnityEngine.SceneManagement;
 using System.Threading;
+using System.Linq;
 
 namespace SleddingEngineTweaks.Scripting
 {
@@ -20,7 +21,7 @@ namespace SleddingEngineTweaks.Scripting
         {
             get
             {
-                if (_instance == null)
+                if (_instance == null || _instance._disposed)
                     _instance = new LuaManager();
                 return _instance;
             }
@@ -67,9 +68,11 @@ namespace SleddingEngineTweaks.Scripting
             // Do NOT broadly register assemblies.
             UserData.RegisterType<GameAPI>();
             UserData.RegisterType<SleddingAPI>();
+            UserData.RegisterType<PrefabAPI>();
             UserData.RegisterType<SleddingAPIStatus>();
             UserData.RegisterType<OptionType>();
             UserData.RegisterType<Vector3>();
+            UserData.RegisterType<Quaternion>();
             UserData.RegisterType<Color>();
             UserData.RegisterType<SafeGameObject>();
             UserData.RegisterType<RaycastResult>();
@@ -84,6 +87,10 @@ namespace SleddingEngineTweaks.Scripting
             // Note: Static properties of Vector3 (e.g., Vector3.zero) are automatically
             // exposed to Lua scripts
             _luaScript.Globals["Vector3"] = new Func<float, float, float, Vector3>((x, y, z) => new Vector3(x, y, z));
+            
+            // Provide a constructor for Quaternion. Lua scripts can use it like:
+            // local myQuat = Quaternion(x, y, z, w) or Quaternion.Euler(x, y, z)
+            _luaScript.Globals["Quaternion"] = new Func<float, float, float, float, Quaternion>((x, y, z, w) => new Quaternion(x, y, z, w));
             
             // Define basic global functions
             _luaScript.Globals["log"] = new Action<DynValue>((message) =>
@@ -122,10 +129,32 @@ namespace SleddingEngineTweaks.Scripting
         {
             try
             {
+                // SECURITY: Validate filename to prevent path traversal
+                if (string.IsNullOrEmpty(fileName) || fileName.Contains("..") || fileName.Contains("/") || fileName.Contains("\\"))
+                {
+                    Plugin.StaticLogger.LogError($"Invalid filename: {fileName}");
+                    return DynValue.Nil;
+                }
+
+                // SECURITY: Only allow .lua files
+                if (!fileName.EndsWith(".lua", StringComparison.OrdinalIgnoreCase))
+                {
+                    Plugin.StaticLogger.LogError($"Only .lua files are allowed: {fileName}");
+                    return DynValue.Nil;
+                }
+
                 string filePath = Path.Combine(_scriptPath, fileName);
                 if (!File.Exists(filePath))
                 {
                     Debug.LogError($"Lua script file not found: {filePath}");
+                    return DynValue.Nil;
+                }
+                
+                // SECURITY: Check file size to prevent memory exhaustion
+                var fileInfo = new FileInfo(filePath);
+                if (fileInfo.Length > 1024 * 1024) // 1MB limit
+                {
+                    Plugin.StaticLogger.LogError($"Script file too large: {fileName} ({fileInfo.Length} bytes)");
                     return DynValue.Nil;
                 }
                 
@@ -141,6 +170,21 @@ namespace SleddingEngineTweaks.Scripting
         
         public void RegisterGlobal<T>(string name, T obj)
         {
+            // SECURITY: Validate global name to prevent overwriting critical functions
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("Global name cannot be null or empty", nameof(name));
+            }
+
+            // SECURITY: Prevent overwriting critical Lua functions
+            // Note: "game", "set", "prefab" are allowed to be overwritten during Plugin initialization
+            string[] protectedNames = { "log", "help", "Vector3", "Quaternion", "Time", "Mathf", "Color" };
+            if (protectedNames.Contains(name))
+            {
+                Plugin.StaticLogger.LogWarning($"Attempted to overwrite protected global: {name}");
+                return;
+            }
+
             _luaScript.Globals[name] = obj;
         }
         
@@ -152,7 +196,6 @@ namespace SleddingEngineTweaks.Scripting
                 int loaded = 0;
                 foreach (string scriptFile in scriptFiles)
                 {
-                    Plugin.StaticLogger.LogInfo($"Loading Lua script: {Path.GetFileName(scriptFile)}");
                     ExecuteFile(Path.GetFileName(scriptFile));
                     loaded++;
                 }
@@ -259,6 +302,9 @@ namespace SleddingEngineTweaks.Scripting
                 if (disposing)
                 {
                     _scriptWatcher?.Dispose();
+                    _scriptWatcher = null;
+                    OnScriptOutput = null;
+                    _luaScript = null;
                 }
                 _disposed = true;
             }
@@ -294,33 +340,12 @@ namespace SleddingEngineTweaks.Scripting
             try
             {
                 _isReloading = true;
-                OutputMessage("Reloading all Lua scripts...");
+                OutputMessage("Reloading Lua scripts...");
 
-                // Prevent event subscriber leaks from UI tabs like ConsoleTab
-                OnScriptOutput = null;
-                // Unload all panels/tabs/options
-                SleddingEngineTweaks.API.SleddingAPI sleddingAPI = Plugin.SleddingAPI;
-                if (sleddingAPI != null)
-                {
-                    sleddingAPI.RemoveAllModPanels();
-                }
-
-                // Dispose old APIs
-                if (Plugin.GameAPI != null) Plugin.GameAPI.Dispose();
-                if (Plugin.SleddingAPI != null) Plugin.SleddingAPI.Dispose();
-                
-                // Re-initialize Lua environment (removes all globals, events, etc)
-                InitializeLua();
-                
-                // Re-register APIs using the same logic as Plugin.Awake()
-                Plugin.Instance.RegisterGameAPI();
-                
-                // Reload all scripts
+                // Just reload the scripts without destroying everything
                 LoadAllScripts();
                 
-                // Re-create the main panel and tabs
-                new SleddingEngineTweaks.UI.SleddingEngineTweaksPanel.SETMain();
-                OutputMessage("Lua scripts reloaded.");
+                OutputMessage("Lua scripts reloaded successfully.");
             }
             catch (Exception e)
             {
