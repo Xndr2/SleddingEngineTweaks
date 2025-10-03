@@ -79,7 +79,7 @@ A comprehensive MelonLoader modding platform for the Sledding Game Demo. This mo
 ### Automatic Installation (Recommended)
 
 1. **Download the mod**:
-   - Download `SleddingEngineTweaks.dll` from the latest release
+   - [Download](https://github.com/Xndr2/SleddingEngineTweaks/releases/latest) `SleddingEngineTweaks.dll` from the latest release
    - Or build it yourself using the build script (see Building section)
 
 2. **Locate your game directory**:
