@@ -3,7 +3,7 @@
 A comprehensive MelonLoader modding platform for the Sledding Game Demo. This mod provides a foundation for advanced game modifications and enhancements.  
 **Warning: This mod is in active development! Expect bugs and crashes...**
 
-## Current Features (v0.1)
+## Current Features (v0.2 - Release)
 
 - **First-Person Camera**: Toggle between third-person and first-person view
 - **Player Model Hiding**: Automatically hides the player's character model when in first-person mode
