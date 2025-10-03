@@ -1,0 +1,8 @@
+/home/xndr/Work/Projects/SleddingGame/SleddingEngineTweaks/bin/Release/SleddingEngineTweaks.deps.json
+/home/xndr/Work/Projects/SleddingGame/SleddingEngineTweaks/bin/Release/SleddingEngineTweaks.dll
+/home/xndr/Work/Projects/SleddingGame/SleddingEngineTweaks/obj/Release/SleddingEngineTweaks.csproj.AssemblyReference.cache
+/home/xndr/Work/Projects/SleddingGame/SleddingEngineTweaks/obj/Release/SleddingEngineTweaks.GeneratedMSBuildEditorConfig.editorconfig
+/home/xndr/Work/Projects/SleddingGame/SleddingEngineTweaks/obj/Release/SleddingEngineTweaks.csproj.CoreCompileInputs.cache
+/home/xndr/Work/Projects/SleddingGame/SleddingEngineTweaks/obj/Release/SleddingEngineTweaks.dll
+/home/xndr/Work/Projects/SleddingGame/SleddingEngineTweaks/obj/Release/refint/SleddingEngineTweaks.dll
+/home/xndr/Work/Projects/SleddingGame/SleddingEngineTweaks/obj/Release/ref/SleddingEngineTweaks.dll

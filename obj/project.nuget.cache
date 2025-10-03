@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "luCffk+dIZc=",
+  "success": true,
+  "projectFilePath": "/home/xndr/Work/Projects/SleddingGame/SleddingEngineTweaks/SleddingEngineTweaks.csproj",
+  "expectedPackageFiles": [
+    "/home/xndr/.nuget/packages/microsoft.netcore.app.ref/6.0.36/microsoft.netcore.app.ref.6.0.36.nupkg.sha512",
+    "/home/xndr/.nuget/packages/microsoft.aspnetcore.app.ref/6.0.36/microsoft.aspnetcore.app.ref.6.0.36.nupkg.sha512"
+  ],
+  "logs": []
+}
